@@ -124,7 +124,7 @@ body.dark button.danger:hover {
 /* ── Layout ── */
 .layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   height: calc(100vh - 50px); /* matches slimmer header */
 }
 
@@ -132,7 +132,6 @@ body.dark button.danger:hover {
 #reading-pane {
   overflow-y: auto;
   padding: 2rem 2.5rem;
-  border-right: 2px solid var(--border);
 }
 
 #reading-pane h2 {
