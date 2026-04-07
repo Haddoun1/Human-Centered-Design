@@ -2,44 +2,76 @@
 <html lang="nl">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Human Centered Design</title>
-       <link rel="stylesheet" href="style.css">
-       <script defer src="script.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Human Centered Design</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
-    <header>
-        <h1>All the read</h1>
-    </header>
-    <main>
-        <section>
-            <h2>Lorem ipsum</h2>
-            <p id="text">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-                deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-                deserunt mollit anim id est laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et
-                dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia
-                deserunt mollit anim id est laborum. 
-            </p>
 
-            <div id="menu">
-                 <button onclick="annotate()">Maak annotatie</button>
-            </div>
-        </section>
+  <nav class="skip-links" aria-label="Snelkoppelingen">
+    <a href="#reading-pane">Ga naar leesgedeelte</a>
+    <a href="#annotation-pane">Ga naar annotaties</a>
+  </nav>
 
-        <div id="box">Drag me around ✨</div>
+  <header>
+    <h1>Human Centered Design</h1>
+  </header>
+
+  <div class="layout">
+
+    <!-- Reading Pane -->
+    <main id="reading-pane" tabindex="-1" aria-label="Leesgedeelte">
+      <h2>Aldus sprak Zarathoestra | 1883–1885</h2>
+      <h3>Friedrich Nietzsche</h3>
+      <div id="text-content" role="list" aria-label="Zinnen — druk op Enter of spatie op een zin om deze te annoteren">
+        <p>Ik leer u de Übermensch. De mens is iets dat overwonnen moet worden.
+          Wat hebt gij gedaan om hem te overwinnen?
+          Alle wezens tot nu toe hebben iets boven zichzelf geschapen; en gij wilt de eb van die grote vloed zijn en
+          liever terugkeren tot het dier dan de mens te overwinnen?
+
+          Wat is de aap voor de mens? Een bespotting of een pijnlijke schaamte. En datzelfde zal de mens zijn voor de
+          Übermensch: een bespotting of een pijnlijke schaamte.
+
+          Gij hebt de weg afgelegd van worm tot mens, en veel in u is nog worm. Eens waart gij apen, en ook nu nog is de
+          mens meer aap dan enige aap.
+
+          Zie, ik leer u de Übermensch! De Übermensch is de zin der aarde. Laat uw wil zeggen: de Übermensch zij de zin
+          der aarde!
+
+          Ik bezweer u, mijn broeders, blijf trouw aan de aarde en geloof niet hen die u van bovenaardse hopen spreken!
+          Vergiftigers zijn het, of zij het weten of niet.
+
+          Verachters van het leven zijn het, afstervenden en zelf vergiftigden, van wie de aarde moe is: laat hen gaan!
+        </p>
+      </div>
     </main>
-    <footer></footer>
+
+    <aside id="annotation-pane" tabindex="-1" aria-label="Annotatiepaneel">
+      <h2>Annotaties</h2>
+
+      <section id="annotation-editor" aria-label="Annotatie-editor" aria-live="polite">
+        <p class="editor-sentence" id="editor-sentence-preview" aria-label="Geselecteerde zin"></p>
+        <label for="annotation-note">Jouw notitie:</label>
+        <textarea id="annotation-note" rows="4" placeholder="Typ hier je annotatie..." aria-required="false"></textarea>
+        <div class="editor-actions">
+          <button class="primary" id="btn-save-annotation">Annotatie opslaan</button>
+          <button id="btn-cancel-annotation">Annuleren</button>
+          <button class="danger" id="btn-delete-annotation" style="display:none;">Annotatie verwijderen</button>
+        </div>
+      </section>
+
+      <section aria-label="Opgeslagen annotaties">
+        <div id="empty-state" aria-live="polite">Nog geen annotaties. Selecteer een zin in het leesgedeelte om er een
+          toe te voegen.</div>
+        <div id="annotation-list" role="list" aria-label="Lijst met annotaties"></div>
+      </section>
+    </aside>
+
+  </div>
+
+  <script src="script.js"></script>
 </body>
 
 </html>
