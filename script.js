@@ -17,7 +17,7 @@ const btnDarkmode = document.createElement('button');
 btnDarkmode.id = 'btn-darkmode';
 btnDarkmode.setAttribute('aria-pressed', 'false');
 btnDarkmode.setAttribute('aria-label', 'Donkere modus inschakelen');
-btnDarkmode.textContent = '🌙 Donkere modus';
+btnDarkmode.textContent = 'Donkere modus';
 document.querySelector('header').appendChild(btnDarkmode);
 
 const DARK_KEY = 'darkmode';
