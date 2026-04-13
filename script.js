@@ -1,316 +1,328 @@
-console.log('Bomboclat');
+document.body.classList.add('dark');
 
-// ──────────────────────────────────────────────────────────────────────────
-// ARIA LIVE REGION — injected because it is not in the HTML
-// ──────────────────────────────────────────────────────────────────────────
-const ariaLive = document.createElement('div');
-ariaLive.id = 'aria-live';
-ariaLive.setAttribute('aria-live', 'polite');
-ariaLive.setAttribute('aria-atomic', 'true');
-ariaLive.setAttribute('role', 'status');
-document.body.prepend(ariaLive);
+(function () {
 
-// ──────────────────────────────────────────────────────────────────────────
-// DARK MODE — toggle button injected into the header
-// ──────────────────────────────────────────────────────────────────────────
-const btnDarkmode = document.createElement('button');
-btnDarkmode.id = 'btn-darkmode';
-btnDarkmode.setAttribute('aria-pressed', 'false');
-btnDarkmode.setAttribute('aria-label', 'Donkere modus inschakelen');
-btnDarkmode.textContent = 'Donkere modus';
-document.querySelector('header').appendChild(btnDarkmode);
-
-const DARK_KEY = 'darkmode';
-
-function applyDarkMode(enabled) {
-  document.body.classList.toggle('dark', enabled);
-  btnDarkmode.setAttribute('aria-pressed', String(enabled));
-  if (enabled) {
-    btnDarkmode.textContent = 'Lichte modus';
-    btnDarkmode.setAttribute('aria-label', 'Lichte modus inschakelen');
-  } else {
-    btnDarkmode.textContent = 'Donkere modus';
-    btnDarkmode.setAttribute('aria-label', 'Donkere modus inschakelen');
+  // ── Sentence splitter ──────────────────────────────────────────
+  function splitSentences(text) {
+    const raw = text.replace(/\s+/g, ' ').trim();
+    const parts = [];
+    const re = /[^.!?]*[.!?]+(?:\s|$)/g;
+    let match;
+    let lastIndex = 0;
+    while ((match = re.exec(raw)) !== null) {
+      parts.push(match[0].trim());
+      lastIndex = re.lastIndex;
+    }
+    // Any remaining text without trailing punctuation
+    const tail = raw.slice(lastIndex).trim();
+    if (tail) parts.push(tail);
+    return parts.filter(s => s.length > 0);
   }
-  localStorage.setItem(DARK_KEY, enabled ? '1' : '0');
-}
 
-// Restore preference from previous visit
-const savedDark = localStorage.getItem(DARK_KEY);
-if (savedDark === '1' || (savedDark === null && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-  applyDarkMode(true);
-}
 
-btnDarkmode.addEventListener('click', () => {
-  applyDarkMode(!document.body.classList.contains('dark'));
-  announce(document.body.classList.contains('dark') ? 'Donkere modus ingeschakeld.' : 'Lichte modus ingeschakeld.');
-});
+  // ── State ──────────────────────────────────────────────────────
+  const annotations = {}; // key: "p{pIdx}-s{sIdx}" → { note, pIdx, sIdx, text }
+  let activeKey = null;   // which sentence is currently selected for input
 
-// ──────────────────────────────────────────────────────────────────────────
-// STATE
-// ──────────────────────────────────────────────────────────────────────────
-let sentences = [];          // array of { id, text }
-let annotations = {};        // { sentenceId: noteText }
-let activeSentenceId = null; // sentence currently open in the editor
 
-// ──────────────────────────────────────────────────────────────────────────
-// DOM REFS
-// ──────────────────────────────────────────────────────────────────────────
-const textContent      = document.getElementById('text-content');
-const annotationEditor = document.getElementById('annotation-editor');
-const editorPreview    = document.getElementById('editor-sentence-preview');
-const annotationNote   = document.getElementById('annotation-note');
-const annotationList   = document.getElementById('annotation-list');
-const emptyState       = document.getElementById('empty-state');
-const btnSave          = document.getElementById('btn-save-annotation');
-const btnCancel        = document.getElementById('btn-cancel-annotation');
-const btnDelete        = document.getElementById('btn-delete-annotation');
+  // ── Build sentence spans ───────────────────────────────────────
+  const paragraphs = document.querySelectorAll('#text-content p');
 
-// ──────────────────────────────────────────────────────────────────────────
-// UTILITY: announce to screen reader (NVDA compatible)
-// ──────────────────────────────────────────────────────────────────────────
-function announce(msg) {
-  ariaLive.textContent = '';
-  setTimeout(() => { ariaLive.textContent = msg; }, 50);
-}
+  paragraphs.forEach((p, pIdx) => {
+    const raw = p.textContent;
+    const sentences = splitSentences(raw);
+    p.innerHTML = '';
 
-// ──────────────────────────────────────────────────────────────────────────
-// PARSE: read text from the existing <p> inside #text-content,
-// split into sentences on every . ! or ?
-// ──────────────────────────────────────────────────────────────────────────
-function parseSentencesFromDOM() {
-  const p = textContent.querySelector('p');
-  if (!p) return [];
-  const raw = p.textContent.match(/[^.!?]+[.!?]+/g) || [p.textContent];
-  return raw
-    .map(s => s.trim())
-    .filter(s => s.length > 0)
-    .map((s, i) => ({ id: `s${i}`, text: s }));
-}
+    sentences.forEach((sent, sIdx) => {
+      const key = `p${pIdx}-s${sIdx}`;
+      const span = document.createElement('span');
+      span.className = 'sentence';
+      span.tabIndex = 0;
+      span.dataset.key = key;
+      span.dataset.pIdx = pIdx;
+      span.dataset.sIdx = sIdx;
+      span.setAttribute('role', 'button');
+      span.setAttribute('aria-label', `Alinea ${pIdx + 1}, zin ${sIdx + 1}: ${sent}`);
+      span.textContent = sent;
 
-// ──────────────────────────────────────────────────────────────────────────
-// RENDER: replace the <p> content with individual focusable <span> elements
-// Each span is a list item so NVDA can navigate it with TAB or virtual cursor
-// ──────────────────────────────────────────────────────────────────────────
-function renderSentences() {
-  textContent.innerHTML = '';
-  sentences.forEach((s, idx) => {
-    const span = document.createElement('span');
-    span.id = `sentence-${s.id}`;
-    span.className = 'sentence';
-    span.setAttribute('role', 'listitem');
-    span.setAttribute('tabindex', '0');
-    span.setAttribute('data-id', s.id);
-    span.textContent = s.text + ' ';
-    span.setAttribute('aria-label', buildAriaLabel(s, idx));
+      // Space between sentences
+      span.insertAdjacentText('beforebegin', sIdx > 0 ? ' ' : '');
 
-    if (annotations[s.id]) span.classList.add('has-annotation');
+      span.addEventListener('click', () => selectSentence(key, span));
+      span.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectSentence(key, span);
+        }
+      });
 
-    // Mouse click
-    span.addEventListener('click', () => openEditor(s.id));
+      p.appendChild(span);
+    });
+  });
 
-    // Keyboard: Enter or Space opens the editor
-    span.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        openEditor(s.id);
-      }
+
+  // ── Select sentence ────────────────────────────────────────────
+  function selectSentence(key, span) {
+    // Already annotated → open edit mode
+    if (annotations[key]) {
+      openEditMode(key);
+      return;
+    }
+
+    // Deselect previous active sentence
+    if (activeKey && activeKey !== key) {
+      document.querySelectorAll('.sentence').forEach(s => s.classList.remove('active-select'));
+      removeInputCard();
+    }
+
+    activeKey = key;
+    span.classList.add('active-select');
+
+    const pIdx = parseInt(span.dataset.pIdx);
+    const sIdx = parseInt(span.dataset.sIdx);
+    const sentText = span.textContent;
+
+    showInputCard(key, pIdx, sIdx, sentText);
+  }
+
+
+  // ── Show input card in annotation pane ────────────────────────
+  function showInputCard(key, pIdx, sIdx, sentText) {
+    removeInputCard();
+    updateEmptyState();
+
+    const card = document.createElement('div');
+    card.className = 'annotation-input-card';
+    card.id = 'active-input-card';
+
+    card.innerHTML = `
+      <div class="ref-label">Alinea ${pIdx + 1} · Zin ${sIdx + 1}</div>
+      <div class="sentence-preview">${escHtml(sentText)}</div>
+      <textarea id="note-textarea" placeholder="Schrijf hier uw annotatie…" rows="3"></textarea>
+      <div class="input-actions">
+        <button class="btn btn-cancel" id="btn-cancel-annotation">Annuleer</button>
+        <button class="btn btn-save" id="btn-save-annotation">Opslaan</button>
+      </div>
+    `;
+
+    const list = document.getElementById('annotation-list');
+    list.insertBefore(card, list.firstChild);
+
+    const textarea = card.querySelector('#note-textarea');
+    textarea.focus();
+
+    card.querySelector('#btn-save-annotation').addEventListener('click', () => {
+      saveAnnotation(key, pIdx, sIdx, sentText, textarea.value.trim());
     });
 
-    textContent.appendChild(span);
-  });
-}
+    card.querySelector('#btn-cancel-annotation').addEventListener('click', () => {
+      cancelInput();
+    });
 
-function buildAriaLabel(s, idx) {
-  const note = annotations[s.id] ? ', heeft annotatie' : '';
-  return `Zin ${idx + 1}${note}: ${s.text}. Druk op Enter of spatie om te annoteren.`;
-}
+    textarea.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        saveAnnotation(key, pIdx, sIdx, sentText, textarea.value.trim());
+      }
+      if (e.key === 'Escape') cancelInput();
+    });
 
-function refreshSentenceSpan(id) {
-  const span = document.getElementById(`sentence-${id}`);
-  if (!span) return;
-  const idx = sentences.findIndex(s => s.id === id);
-  span.setAttribute('aria-label', buildAriaLabel(sentences[idx], idx));
-  span.classList.toggle('has-annotation', !!annotations[id]);
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// EDITOR: open / close
-// ──────────────────────────────────────────────────────────────────────────
-function openEditor(id) {
-  // Clear previous active highlight
-  if (activeSentenceId) {
-    const prev = document.getElementById(`sentence-${activeSentenceId}`);
-    if (prev) prev.classList.remove('active');
+    updateEmptyState();
   }
 
-  activeSentenceId = id;
-  const s = sentences.find(x => x.id === id);
 
-  document.getElementById(`sentence-${id}`).classList.add('active');
-
-  editorPreview.textContent = `"${s.text}"`;
-  annotationNote.value = annotations[id] || '';
-  btnDelete.style.display = annotations[id] ? 'inline-block' : 'none';
-
-  annotationEditor.classList.add('visible');
-  annotationEditor.removeAttribute('aria-hidden');
-
-  // Move focus to the textarea so NVDA reads the editor immediately
-  annotationNote.focus();
-
-  announce(`Annotatie bewerken voor zin: ${s.text}`);
-}
-
-function closeEditor() {
-  annotationEditor.classList.remove('visible');
-  annotationEditor.setAttribute('aria-hidden', 'true');
-
-  if (activeSentenceId) {
-    const span = document.getElementById(`sentence-${activeSentenceId}`);
-    if (span) {
-      span.classList.remove('active');
-      span.focus(); // return focus to the sentence in the reading pane
+  // ── Cancel input ───────────────────────────────────────────────
+  function cancelInput() {
+    if (activeKey) {
+      const span = document.querySelector(`.sentence[data-key="${activeKey}"]`);
+      if (span) span.classList.remove('active-select');
     }
+    activeKey = null;
+    removeInputCard();
+    updateEmptyState();
   }
-  activeSentenceId = null;
-  annotationNote.value = '';
-}
 
-// ──────────────────────────────────────────────────────────────────────────
-// SAVE / DELETE
-// ──────────────────────────────────────────────────────────────────────────
-function saveAnnotation() {
-  const note = annotationNote.value.trim();
-  if (!note) {
-    announce('Notitie is leeg. Schrijf eerst iets voor je opslaat.');
-    annotationNote.focus();
-    return;
+  function removeInputCard() {
+    const existing = document.getElementById('active-input-card');
+    if (existing) existing.remove();
   }
-  annotations[activeSentenceId] = note;
-  refreshSentenceSpan(activeSentenceId);
-  renderAnnotationList();
-  announce('Annotatie opgeslagen.');
-  closeEditor();
-}
 
-function deleteAnnotation() {
-  if (!activeSentenceId || !annotations[activeSentenceId]) return;
-  delete annotations[activeSentenceId];
-  refreshSentenceSpan(activeSentenceId);
-  renderAnnotationList();
-  announce('Annotatie verwijderd.');
-  closeEditor();
-}
 
-// ──────────────────────────────────────────────────────────────────────────
-// RENDER ANNOTATION LIST
-// ──────────────────────────────────────────────────────────────────────────
-function renderAnnotationList() {
-  annotationList.innerHTML = '';
-  const ids = Object.keys(annotations);
+  // ── Save annotation ────────────────────────────────────────────
+  function saveAnnotation(key, pIdx, sIdx, sentText, note) {
+    if (!note) { cancelInput(); return; }
 
-  emptyState.style.display = ids.length === 0 ? 'block' : 'none';
-  if (ids.length === 0) return;
+    annotations[key] = { note, pIdx, sIdx, text: sentText };
 
-  // Keep annotations in reading order
-  ids.sort((a, b) => {
-    return sentences.findIndex(s => s.id === a) - sentences.findIndex(s => s.id === b);
-  });
+    const span = document.querySelector(`.sentence[data-key="${key}"]`);
+    if (span) {
+      span.classList.remove('active-select');
+      span.classList.add('annotated');
+      span.dataset.notePreview = note.length > 50 ? note.slice(0, 50) + '…' : note;
+    }
 
-  ids.forEach(id => {
-    const s = sentences.find(x => x.id === id);
-    if (!s) return;
+    activeKey = null;
+    removeInputCard();
+    renderAnnotationCard(key);
+    updateEmptyState();
+  }
+
+
+  // ── Render saved annotation card ───────────────────────────────
+  function renderAnnotationCard(key) {
+    const a = annotations[key];
+    if (!a) return;
+
+    // Remove existing card for this key if present
+    const existing = document.querySelector(`.annotation-card[data-key="${key}"]`);
+    if (existing) existing.remove();
 
     const card = document.createElement('div');
     card.className = 'annotation-card';
-    card.setAttribute('role', 'listitem');
-    card.setAttribute('aria-label', `Annotatie voor: ${s.text}`);
+    card.dataset.key = key;
 
-    const sentenceEl = document.createElement('p');
-    sentenceEl.className = 'card-sentence';
-    sentenceEl.textContent = `"${s.text}"`;
+    card.innerHTML = `
+      <div class="card-ref">Alinea ${a.pIdx + 1} · Zin ${a.sIdx + 1}</div>
+      <div class="card-sentence">${escHtml(a.text)}</div>
+      <div class="card-note">${escHtml(a.note)}</div>
+      <div class="card-actions">
+        <button class="btn btn-edit">Bewerken</button>
+        <button class="btn btn-delete">Verwijderen</button>
+      </div>
+    `;
 
-    const noteEl = document.createElement('p');
-    noteEl.className = 'card-note';
-    noteEl.textContent = annotations[id];
+    card.querySelector('.btn-edit').addEventListener('click', () => openEditMode(key));
+    card.querySelector('.btn-delete').addEventListener('click', () => deleteAnnotation(key));
+
+    // Click card body → scroll to sentence in text
+    card.addEventListener('click', e => {
+      if (e.target.classList.contains('btn')) return;
+      scrollToSentence(key);
+    });
+
+    // Insert sorted by paragraph index, then sentence index
+    const list = document.getElementById('annotation-list');
+    const cards = [...list.querySelectorAll('.annotation-card')];
+    const insertBefore = cards.find(c => {
+      const k = c.dataset.key;
+      if (!annotations[k]) return false;
+      const { pIdx, sIdx } = annotations[k];
+      return pIdx > a.pIdx || (pIdx === a.pIdx && sIdx > a.sIdx);
+    });
+
+    if (insertBefore) list.insertBefore(card, insertBefore);
+    else list.appendChild(card);
+  }
+
+
+  // ── Edit mode ─────────────────────────────────────────────────
+  function openEditMode(key) {
+    const a = annotations[key];
+    if (!a) return;
+
+    removeInputCard();
+    const existingCard = document.querySelector(`.annotation-card[data-key="${key}"]`);
+    if (!existingCard) return;
+
+    const noteEl = existingCard.querySelector('.card-note');
+    const actionsEl = existingCard.querySelector('.card-actions');
+
+    const textarea = document.createElement('textarea');
+    Object.assign(textarea.style, {
+      width: '100%',
+      background: '#1a1a2e',
+      border: '1.5px solid var(--accent)',
+      borderRadius: '5px',
+      color: 'var(--text)',
+      fontFamily: 'var(--font-ui)',
+      fontSize: '0.83rem',
+      lineHeight: '1.5',
+      padding: '0.5rem 0.65rem',
+      resize: 'vertical',
+      minHeight: '70px',
+      marginTop: '0.4rem',
+    });
+    textarea.value = a.note;
 
     const actions = document.createElement('div');
     actions.className = 'card-actions';
+    actions.innerHTML = `
+      <button class="btn btn-cancel" style="font-size:0.72rem;padding:0.25rem 0.65rem;border:1.5px solid var(--border);background:transparent;color:var(--muted)">Annuleer</button>
+      <button class="btn btn-save" style="font-size:0.72rem;padding:0.25rem 0.65rem">Opslaan</button>
+    `;
 
-    // Edit button
-    const editBtn = document.createElement('button');
-    editBtn.textContent = 'Bewerken';
-    editBtn.setAttribute('aria-label', `Annotatie bewerken voor: ${s.text}`);
-    editBtn.addEventListener('click', () => {
-      const span = document.getElementById(`sentence-${id}`);
-      if (span) span.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      openEditor(id);
+    noteEl.replaceWith(textarea);
+    actionsEl.replaceWith(actions);
+    textarea.focus();
+
+    actions.querySelector('.btn-save').addEventListener('click', () => {
+      const newNote = textarea.value.trim();
+      if (!newNote) { deleteAnnotation(key); return; }
+      annotations[key].note = newNote;
+      const span = document.querySelector(`.sentence[data-key="${key}"]`);
+      if (span) span.dataset.notePreview = newNote.length > 50 ? newNote.slice(0, 50) + '…' : newNote;
+      existingCard.remove();
+      renderAnnotationCard(key);
+      updateEmptyState();
     });
 
-    // Jump to sentence button
-    const jumpBtn = document.createElement('button');
-    jumpBtn.textContent = 'Ga naar zin';
-    jumpBtn.setAttribute('aria-label', `Spring naar zin in leesgedeelte: ${s.text}`);
-    jumpBtn.addEventListener('click', () => {
-      const span = document.getElementById(`sentence-${id}`);
-      if (span) {
-        span.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        span.focus();
-        announce(`Gesprongen naar: ${s.text}`);
-      }
+    actions.querySelector('.btn-cancel').addEventListener('click', () => {
+      existingCard.remove();
+      renderAnnotationCard(key);
     });
 
-    // Delete button
-    const delBtn = document.createElement('button');
-    delBtn.textContent = 'Verwijderen';
-    delBtn.className = 'danger';
-    delBtn.setAttribute('aria-label', `Annotatie verwijderen voor: ${s.text}`);
-    delBtn.addEventListener('click', () => {
-      delete annotations[id];
-      refreshSentenceSpan(id);
-      renderAnnotationList();
-      announce('Annotatie verwijderd.');
+    textarea.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) actions.querySelector('.btn-save').click();
+      if (e.key === 'Escape') actions.querySelector('.btn-cancel').click();
     });
-
-    actions.appendChild(editBtn);
-    actions.appendChild(jumpBtn);
-    actions.appendChild(delBtn);
-
-    card.appendChild(sentenceEl);
-    card.appendChild(noteEl);
-    card.appendChild(actions);
-    annotationList.appendChild(card);
-  });
-}
-
-// ──────────────────────────────────────────────────────────────────────────
-// EDITOR BUTTON EVENTS
-// ──────────────────────────────────────────────────────────────────────────
-btnSave.addEventListener('click', saveAnnotation);
-
-btnCancel.addEventListener('click', () => {
-  closeEditor();
-  announce('Annotatie geannuleerd.');
-});
-
-btnDelete.addEventListener('click', deleteAnnotation);
-
-// Ctrl+Enter saves; Escape cancels — both work well with NVDA
-annotationNote.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter' && e.ctrlKey) {
-    e.preventDefault();
-    saveAnnotation();
   }
-  if (e.key === 'Escape') {
-    closeEditor();
-  }
-});
 
-// ──────────────────────────────────────────────────────────────────────────
-// INIT
-// ──────────────────────────────────────────────────────────────────────────
-sentences = parseSentencesFromDOM();
-renderSentences();
-renderAnnotationList();
-annotationEditor.setAttribute('aria-hidden', 'true');
+
+  // ── Delete annotation ─────────────────────────────────────────
+  function deleteAnnotation(key) {
+    delete annotations[key];
+
+    const span = document.querySelector(`.sentence[data-key="${key}"]`);
+    if (span) {
+      span.classList.remove('annotated', 'active-select');
+      delete span.dataset.notePreview;
+    }
+
+    const card = document.querySelector(`.annotation-card[data-key="${key}"]`);
+    if (card) card.remove();
+
+    updateEmptyState();
+  }
+
+
+  // ── Scroll & focus a sentence ─────────────────────────────────
+  function scrollToSentence(key) {
+    const span = document.querySelector(`.sentence[data-key="${key}"]`);
+    if (span) {
+      span.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      span.focus();
+    }
+  }
+
+
+  // ── Empty state visibility ─────────────────────────────────────
+  function updateEmptyState() {
+    const emptyState = document.getElementById('empty-state');
+    const hasContent = Object.keys(annotations).length > 0 || document.getElementById('active-input-card');
+    emptyState.style.display = hasContent ? 'none' : 'flex';
+  }
+
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function escHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+
+  // ── Init ──────────────────────────────────────────────────────
+  updateEmptyState();
+
+})();

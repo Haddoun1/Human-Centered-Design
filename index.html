@@ -10,45 +10,88 @@
 
 <body>
 
-  <nav class="skip-links" aria-label="Snelkoppelingen">
-    <a href="#reading-pane">Ga naar leesgedeelte</a>
-    <a href="#annotation-pane">Ga naar annotaties</a>
-  </nav>
-
   <header>
     <h1>Human Centered Design</h1>
   </header>
 
   <div class="layout">
 
-    <!-- Reading Pane -->
     <main id="reading-pane" tabindex="-1" aria-label="Leesgedeelte">
-      <h2>Aldus sprak Zarathoestra | 1883–1885</h2>
-      <h3>Friedrich Nietzsche</h3>
-      <div id="text-content" role="list" aria-label="Zinnen — druk op Enter of spatie op een zin om deze te annoteren">
-        <p>Ik leer u de Übermensch. De mens is iets dat overwonnen moet worden.
-          Wat hebt gij gedaan om hem te overwinnen?
-          Alle wezens tot nu toe hebben iets boven zichzelf geschapen; en gij wilt de eb van die grote vloed zijn en
-          liever terugkeren tot het dier dan de mens te overwinnen?
 
-          Wat is de aap voor de mens? Een bespotting of een pijnlijke schaamte. En datzelfde zal de mens zijn voor de
-          Übermensch: een bespotting of een pijnlijke schaamte.
+      <h2 tabindex="0">
+        Aldus sprak Zarathoestra |
+        <span aria-hidden="true">1883–1885</span>
+        <span class="sr-only">
+          achttienhonderd drieëntachtig tot achttienhonderd vijfentachtig
+        </span>
+      </h2>
 
-          Gij hebt de weg afgelegd van worm tot mens, en veel in u is nog worm. Eens waart gij apen, en ook nu nog is de
-          mens meer aap dan enige aap.
+      <h3 tabindex="0">Friedrich Nietzsche</h3>
 
-          Zie, ik leer u de Übermensch! De Übermensch is de zin der aarde. Laat uw wil zeggen: de Übermensch zij de zin
-          der aarde!
+      <section id="text-content" aria-label="Zinnen — druk op Enter of spatie op een zin om deze te annoteren">
 
-          Ik bezweer u, mijn broeders, blijf trouw aan de aarde en geloof niet hen die u van bovenaardse hopen spreken!
-          Vergiftigers zijn het, of zij het weten of niet.
-
-          Verachters van het leven zijn het, afstervenden en zelf vergiftigden, van wie de aarde moe is: laat hen gaan!
+        <p tabindex="0">
+          Ik leer u de Übermensch. De mens is iets dat overwonnen moet worden.
+          Wat hebt gij gedaan om hem te overwinnen? Alle wezens tot nu toe hebben
+          iets boven zichzelf geschapen; en gij wilt de eb van die grote vloed zijn
+          en liever terugkeren tot het dier dan de mens te overwinnen? Is uw wil zo
+          zwak geworden dat hij niet langer durft te stijgen? Of vreest gij de hoogte
+          waarin geen houvast meer is?
         </p>
-      </div>
+
+        <p tabindex="0">
+          Wat is de aap voor de mens? Een bespotting of een pijnlijke schaamte.
+          En datzelfde zal de mens zijn voor de Übermensch: een bespotting of een
+          pijnlijke schaamte. Gij kijkt terug met trots, maar ziet niet hoe gij zelf
+          nog een brug zijt en geen doel. Want de mens is iets dat moet worden
+          overwonnen, een overgang en een ondergang. Slechts wie durft te vallen,
+          kan werkelijk stijgen.
+        </p>
+
+        <p tabindex="0">
+          Gij hebt de weg afgelegd van worm tot mens, en veel in u is nog worm.
+          Eens waart gij apen, en ook nu nog is de mens meer aap dan enige aap.
+          Uw driften trekken u naar beneden, terwijl uw geest u omhoog wil voeren.
+          In die strijd leeft gij, maar zelden kiest gij werkelijk voor de verheffing.
+          Gij zijt verdeeld, en noemt die verdeeldheid uw natuur.
+        </p>
+
+        <p tabindex="0">
+          Zie, ik leer u de Übermensch! De Übermensch is de zin der aarde.
+          Laat uw wil zeggen: de Übermensch zij de zin der aarde! Niet in hemelen
+          ver weg ligt uw bestemming, maar hier, op deze aarde, in dit leven.
+          Schep uzelf opnieuw, telkens weer, en wees niet tevreden met wat gij zijt.
+          Want slechts wie zichzelf overwint, nadert dat hogere wezen.
+        </p>
+
+        <p tabindex="0">
+          Ik bezweer u, mijn broeders, blijf trouw aan de aarde en geloof niet hen
+          die u van bovenaardse hopen spreken! Vergiftigers zijn het, of zij het
+          weten of niet. Zij beroven u van uw kracht door u te laten verlangen naar
+          een wereld die niet bestaat. Zij maken uw leven klein door het te meten
+          aan een hiernamaals. Maar het ware leven vraagt om moed, niet om vlucht.
+        </p>
+
+        <p tabindex="0">
+          Verachters van het leven zijn het, afstervenden en zelf vergiftigden,
+          van wie de aarde moe is: laat hen gaan! Keer u af van hun somberheid en
+          hun ontkenning. Kies voor het leven, zelfs in zijn hardheid en zijn strijd.
+          Want alleen wie het leven volledig omarmt, met al zijn pijn en vreugde,
+          kan iets nieuws scheppen. En slechts in dat scheppen wordt de mens meer
+          dan mens.
+        </p>
+
+      </section>
     </main>
 
-  </div>
+    <div id="annotation-pane" tabindex="-1" aria-label="Annotatiegedeelte">
+      <h4>Annotaties</h4>
+      <div class="empty-state" id="empty-state">
+        <span>Klik op een zin in de tekst om een annotatie toe te voegen.</span>
+      </div>
+      <div class="annotation-list" id="annotation-list"></div>
+    </div>
+    </div>
 
   <script src="script.js"></script>
 </body>
