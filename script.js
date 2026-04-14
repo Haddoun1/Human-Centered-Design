@@ -1,11 +1,13 @@
 (function () {
+
   // ─────────────────────────────────────────────────────────────────────────────
   // STATE
   // Holds all saved annotations and tracks which sentence is being edited.
   // ─────────────────────────────────────────────────────────────────────────────
 
   const annotations = {}; // key: "p{pIdx}-s{sIdx}" → { note, pIdx, sIdx, text }
-  let activeKey = null; // key of the sentence currently selected for input
+  let activeKey = null;   // key of the sentence currently selected for input
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // UTILITY: escHtml
@@ -15,11 +17,12 @@
 
   function escHtml(str) {
     return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // UTILITY: splitSentences
@@ -28,7 +31,7 @@
   // ─────────────────────────────────────────────────────────────────────────────
 
   function splitSentences(text) {
-    const raw = text.replace(/\s+/g, " ").trim();
+    const raw = text.replace(/\s+/g, ' ').trim();
     const parts = [];
     const re = /[^.!?]*[.!?]+(?:\s|$)/g;
     let match;
@@ -43,8 +46,9 @@
     const tail = raw.slice(lastIndex).trim();
     if (tail) parts.push(tail);
 
-    return parts.filter((s) => s.length > 0);
+    return parts.filter(s => s.length > 0);
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // UTILITY: updateEmptyState
@@ -53,12 +57,13 @@
   // ─────────────────────────────────────────────────────────────────────────────
 
   function updateEmptyState() {
-    const emptyState = document.getElementById("empty-state");
+    const emptyState = document.getElementById('empty-state');
     const hasContent =
       Object.keys(annotations).length > 0 ||
-      document.getElementById("active-input-card") !== null;
-    emptyState.style.display = hasContent ? "none" : "flex";
+      document.getElementById('active-input-card') !== null;
+    emptyState.style.display = hasContent ? 'none' : 'flex';
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // UTILITY: scrollToSentence
@@ -69,10 +74,11 @@
   function scrollToSentence(key) {
     const span = document.querySelector(`.sentence[data-key="${key}"]`);
     if (span) {
-      span.scrollIntoView({ behavior: "smooth", block: "center" });
+      span.scrollIntoView({ behavior: 'smooth', block: 'center' });
       span.focus();
     }
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // BUILD: buildSentenceSpans
@@ -82,39 +88,34 @@
   // ─────────────────────────────────────────────────────────────────────────────
 
   function buildSentenceSpans() {
-    const paragraphs = document.querySelectorAll("#text-content p");
+    const paragraphs = document.querySelectorAll('#text-content p');
 
     paragraphs.forEach((p, pIdx) => {
       const sentences = splitSentences(p.textContent);
-      p.innerHTML = "";
+      p.innerHTML = '';
 
       sentences.forEach((sent, sIdx) => {
         const key = `p${pIdx}-s${sIdx}`;
-        const span = document.createElement("span");
+        const span = document.createElement('button');
 
-        span.className = "sentence";
-        span.tabIndex = 0;
+        span.className = 'sentence';
         span.dataset.key = key;
         span.dataset.pIdx = pIdx;
         span.dataset.sIdx = sIdx;
-        span.setAttribute("role", "button");
+        // No aria-label needed — button reads its own text content,
+        // and "knop" / "gebied klikbaar" announcements are gone.
         span.textContent = sent;
 
         // Add a space before every sentence except the first
-        span.insertAdjacentText("beforebegin", sIdx > 0 ? " " : "");
+        span.insertAdjacentText('beforebegin', sIdx > 0 ? ' ' : '');
 
-        span.addEventListener("click", () => selectSentence(key, span));
-        span.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            selectSentence(key, span);
-          }
-        });
+        span.addEventListener('click', () => selectSentence(key, span));
 
         p.appendChild(span);
       });
     });
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // INTERACTION: selectSentence
@@ -131,20 +132,19 @@
 
     // Deselect the previously active sentence if it's a different one
     if (activeKey && activeKey !== key) {
-      document
-        .querySelectorAll(".sentence")
-        .forEach((s) => s.classList.remove("active-select"));
+      document.querySelectorAll('.sentence').forEach(s => s.classList.remove('active-select'));
       removeInputCard();
     }
 
     activeKey = key;
-    span.classList.add("active-select");
+    span.classList.add('active-select');
 
     const pIdx = parseInt(span.dataset.pIdx);
     const sIdx = parseInt(span.dataset.sIdx);
 
     showInputCard(key, pIdx, sIdx, span.textContent);
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // INPUT CARD: showInputCard
@@ -156,9 +156,9 @@
     removeInputCard(); // Clear any pre-existing card first
     updateEmptyState();
 
-    const card = document.createElement("div");
-    card.className = "annotation-input-card";
-    card.id = "active-input-card";
+    const card = document.createElement('div');
+    card.className = 'annotation-input-card';
+    card.id = 'active-input-card';
 
     card.innerHTML = `
       <div class="ref-label">Alinea ${pIdx + 1} · Zin ${sIdx + 1}</div>
@@ -170,29 +170,28 @@
       </div>
     `;
 
-    const list = document.getElementById("annotation-list");
+    const list = document.getElementById('annotation-list');
     list.insertBefore(card, list.firstChild);
 
-    const textarea = card.querySelector("#note-textarea");
+    const textarea = card.querySelector('#note-textarea');
     textarea.focus();
 
-    card.querySelector("#btn-save-annotation").addEventListener("click", () => {
+    card.querySelector('#btn-save-annotation').addEventListener('click', () => {
       saveAnnotation(key, pIdx, sIdx, sentText, textarea.value.trim());
     });
 
-    card
-      .querySelector("#btn-cancel-annotation")
-      .addEventListener("click", cancelInput);
+    card.querySelector('#btn-cancel-annotation').addEventListener('click', cancelInput);
 
-    textarea.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+    textarea.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         saveAnnotation(key, pIdx, sIdx, sentText, textarea.value.trim());
       }
-      if (e.key === "Escape") cancelInput();
+      if (e.key === 'Escape') cancelInput();
     });
 
     updateEmptyState();
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // INPUT CARD: removeInputCard
@@ -201,9 +200,10 @@
   // ─────────────────────────────────────────────────────────────────────────────
 
   function removeInputCard() {
-    const existing = document.getElementById("active-input-card");
+    const existing = document.getElementById('active-input-card');
     if (existing) existing.remove();
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // INPUT CARD: cancelInput
@@ -214,12 +214,13 @@
   function cancelInput() {
     if (activeKey) {
       const span = document.querySelector(`.sentence[data-key="${activeKey}"]`);
-      if (span) span.classList.remove("active-select");
+      if (span) span.classList.remove('active-select');
     }
     activeKey = null;
     removeInputCard();
     updateEmptyState();
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // ANNOTATION: saveAnnotation
@@ -238,10 +239,9 @@
 
     const span = document.querySelector(`.sentence[data-key="${key}"]`);
     if (span) {
-      span.classList.remove("active-select");
-      span.classList.add("annotated");
-      span.dataset.notePreview =
-        note.length > 50 ? note.slice(0, 50) + "…" : note;
+      span.classList.remove('active-select');
+      span.classList.add('annotated');
+      span.dataset.notePreview = note.length > 50 ? note.slice(0, 50) + '…' : note;
     }
 
     activeKey = null;
@@ -249,6 +249,7 @@
     renderAnnotationCard(key);
     updateEmptyState();
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // ANNOTATION: renderAnnotationCard
@@ -262,13 +263,11 @@
     if (!a) return;
 
     // Remove any existing card for this key before re-rendering
-    const existing = document.querySelector(
-      `.annotation-card[data-key="${key}"]`,
-    );
+    const existing = document.querySelector(`.annotation-card[data-key="${key}"]`);
     if (existing) existing.remove();
 
-    const card = document.createElement("div");
-    card.className = "annotation-card";
+    const card = document.createElement('div');
+    card.className = 'annotation-card';
     card.dataset.key = key;
 
     card.innerHTML = `
@@ -281,21 +280,18 @@
       </div>
     `;
 
-    card
-      .querySelector(".btn-edit")
-      .addEventListener("click", () => openEditMode(key));
-    card
-      .querySelector(".btn-delete")
-      .addEventListener("click", () => deleteAnnotation(key));
+    card.querySelector('.btn-edit').addEventListener('click', () => openEditMode(key));
+    card.querySelector('.btn-delete').addEventListener('click', () => deleteAnnotation(key));
 
     // Clicking the card body (not buttons) scrolls to the sentence in the text
-    card.addEventListener("click", (e) => {
-      if (!e.target.classList.contains("btn")) scrollToSentence(key);
+    card.addEventListener('click', e => {
+      if (!e.target.classList.contains('btn')) scrollToSentence(key);
     });
 
     // Insert the card in reading order
     insertCardInOrder(card, a);
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // ANNOTATION: insertCardInOrder
@@ -304,10 +300,10 @@
   // ─────────────────────────────────────────────────────────────────────────────
 
   function insertCardInOrder(card, annotation) {
-    const list = document.getElementById("annotation-list");
-    const cards = [...list.querySelectorAll(".annotation-card")];
+    const list = document.getElementById('annotation-list');
+    const cards = [...list.querySelectorAll('.annotation-card')];
 
-    const insertBefore = cards.find((c) => {
+    const insertBefore = cards.find(c => {
       const existing = annotations[c.dataset.key];
       if (!existing) return false;
       return (
@@ -320,6 +316,7 @@
     else list.appendChild(card);
   }
 
+
   // ─────────────────────────────────────────────────────────────────────────────
   // ANNOTATION: deleteAnnotation
   // Removes an annotation from state, strips the highlight from the sentence
@@ -331,7 +328,7 @@
 
     const span = document.querySelector(`.sentence[data-key="${key}"]`);
     if (span) {
-      span.classList.remove("annotated", "active-select");
+      span.classList.remove('annotated', 'active-select');
       delete span.dataset.notePreview;
     }
 
@@ -340,6 +337,7 @@
 
     updateEmptyState();
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // ANNOTATION: openEditMode
@@ -355,34 +353,32 @@
 
     removeInputCard(); // close any floating input card
 
-    const existingCard = document.querySelector(
-      `.annotation-card[data-key="${key}"]`,
-    );
+    const existingCard = document.querySelector(`.annotation-card[data-key="${key}"]`);
     if (!existingCard) return;
 
     // Swap the note element for a textarea
-    const noteEl = existingCard.querySelector(".card-note");
-    const actionsEl = existingCard.querySelector(".card-actions");
+    const noteEl = existingCard.querySelector('.card-note');
+    const actionsEl = existingCard.querySelector('.card-actions');
 
-    const textarea = document.createElement("textarea");
+    const textarea = document.createElement('textarea');
     Object.assign(textarea.style, {
-      width: "100%",
-      background: "#1a1a2e",
-      border: "1.5px solid var(--accent)",
-      borderRadius: "5px",
-      color: "var(--text)",
-      fontFamily: "var(--font-ui)",
-      fontSize: "0.83rem",
-      lineHeight: "1.5",
-      padding: "0.5rem 0.65rem",
-      resize: "vertical",
-      minHeight: "70px",
-      marginTop: "0.4rem",
+      width: '100%',
+      background: '#1a1a2e',
+      border: '1.5px solid var(--accent)',
+      borderRadius: '5px',
+      color: 'var(--text)',
+      fontFamily: 'var(--font-ui)',
+      fontSize: '0.83rem',
+      lineHeight: '1.5',
+      padding: '0.5rem 0.65rem',
+      resize: 'vertical',
+      minHeight: '70px',
+      marginTop: '0.4rem',
     });
     textarea.value = a.note;
 
-    const actions = document.createElement("div");
-    actions.className = "card-actions";
+    const actions = document.createElement('div');
+    actions.className = 'card-actions';
     actions.innerHTML = `
       <button class="btn btn-cancel" style="font-size:0.72rem;padding:0.25rem 0.65rem;border:1.5px solid var(--border);background:transparent;color:var(--muted)">Annuleer</button>
       <button class="btn btn-save"   style="font-size:0.72rem;padding:0.25rem 0.65rem">Opslaan</button>
@@ -392,7 +388,7 @@
     actionsEl.replaceWith(actions);
     textarea.focus();
 
-    actions.querySelector(".btn-save").addEventListener("click", () => {
+    actions.querySelector('.btn-save').addEventListener('click', () => {
       const newNote = textarea.value.trim();
       if (!newNote) {
         deleteAnnotation(key); // empty save = delete
@@ -403,8 +399,7 @@
       // Update the tooltip preview on the sentence span
       const span = document.querySelector(`.sentence[data-key="${key}"]`);
       if (span) {
-        span.dataset.notePreview =
-          newNote.length > 50 ? newNote.slice(0, 50) + "…" : newNote;
+        span.dataset.notePreview = newNote.length > 50 ? newNote.slice(0, 50) + '…' : newNote;
       }
 
       existingCard.remove();
@@ -412,17 +407,17 @@
       updateEmptyState();
     });
 
-    actions.querySelector(".btn-cancel").addEventListener("click", () => {
+    actions.querySelector('.btn-cancel').addEventListener('click', () => {
       existingCard.remove();
       renderAnnotationCard(key); // re-render original card
     });
 
-    textarea.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && (e.ctrlKey || e.metaKey))
-        actions.querySelector(".btn-save").click();
-      if (e.key === "Escape") actions.querySelector(".btn-cancel").click();
+    textarea.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) actions.querySelector('.btn-save').click();
+      if (e.key === 'Escape') actions.querySelector('.btn-cancel').click();
     });
   }
+
 
   // ─────────────────────────────────────────────────────────────────────────────
   // INIT
@@ -431,4 +426,5 @@
 
   buildSentenceSpans();
   updateEmptyState();
+
 })();

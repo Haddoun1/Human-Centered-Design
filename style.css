@@ -104,6 +104,8 @@ header h1 {
 }
 
 
+
+
 /* ── Sentences ── */
 .sentence {
   cursor: pointer;
@@ -161,6 +163,11 @@ header h1 {
 
 .sentence.annotated:hover::after {
   opacity: 1;
+}
+
+button.sentence {
+  all: unset;
+  cursor: pointer;
 }
 
 
