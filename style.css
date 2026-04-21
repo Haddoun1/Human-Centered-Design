@@ -1,26 +1,37 @@
-/* ── Base ── */
-*, *::before, *::after {
+/* ─────────────────────────────
+   Base
+───────────────────────────── */
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 :root {
-  --font-body: Georgia, 'Times New Roman', serif;
-  --font-ui: 'Segoe UI', Arial, sans-serif;
+  --font-body: Georgia, "Times New Roman", serif;
+  --font-ui: "Segoe UI", Arial, sans-serif;
+
   --bg: #1a1a1e;
   --surface: #25252b;
   --border: #3a3a44;
+
   --text: #e8e6e0;
-  --muted: #a8a8b8;
-  --accent: #7eaaff;
-  --accent-hover: #a8c4ff;
-  --highlight: rgba(126, 170, 255, 0.13);
-  --highlight-active: rgba(126, 170, 255, 0.26);
-  --annotation-bg: #1e2030;
-  --annotation-border: #3a4470;
-  --card-bg: #252840;
-  --card-border: #3a4470;
+  --grey: #a8a8b8;
+
+  --accent: #f5c542;
+  --accent-hover: #ffe07a;
+
+  --highlight: rgba(245, 197, 66, 0.13);
+  --highlight-active: rgba(245, 197, 66, 0.26);
+
+  --annotation-bg: #1e1e20;
+  --annotation-border: #6b5a20;
+
+  --card-bg: #252318;
+  --card-border: #6b5a20;
+
   --danger: #ff6b6b;
   --green: #6bffb8;
 }
@@ -29,27 +40,53 @@ body {
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
-  font-size: 1.125rem;
+  font-size: 2rem;
   line-height: 1.8;
 }
 
 
-/* ── Header ── */
+/* ─────────────────────────────
+   Responsive
+───────────────────────────── */
+@media (max-width: 768px) {
+  .layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  #reading-pane {
+    height: 50vh;
+    border-right: none;
+    border-bottom: 2px solid var(--border);
+  }
+
+  #annotation-pane {
+    height: 50vh;
+  }
+}
+
+
+/* ─────────────────────────────
+   Header
+───────────────────────────── */
 header {
-  background: var(--surface);
-  border-bottom: 2px solid var(--border);
-  padding: 0.75rem 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   position: sticky;
   top: 0;
   z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 0.75rem 1.5rem;
+
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
 }
 
 header h1 {
   font-family: var(--font-ui);
-  font-size: 1.1rem;
+  font-size: clamp(1.1rem, 3vw, 3rem);
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 0.01em;
@@ -58,12 +95,14 @@ header h1 {
 .header-hint {
   font-family: var(--font-ui);
   font-size: 0.72rem;
-  color: var(--muted);
+  color: var(--grey);
   letter-spacing: 0.04em;
 }
 
 
-/* ── Layout ── */
+/* ─────────────────────────────
+   Layout
+───────────────────────────── */
 .layout {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -71,48 +110,63 @@ header h1 {
 }
 
 
-/* ── Reading Pane ── */
+/* ─────────────────────────────
+   Reading Pane
+───────────────────────────── */
 #reading-pane {
   overflow-y: auto;
   padding: 2rem 2.5rem;
+
   border-right: 2px solid var(--border);
-  scrollbar-color: #3a4470 #1a1a1e;
+  scrollbar-color: #6b5a20 #1a1a1e;
+}
+
+#reading-pane h2,
+#reading-pane h3 {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  color: var(--grey);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 #reading-pane h2 {
-  font-family: var(--font-ui);
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   margin-bottom: 0.5rem;
 }
 
+#reading-pane h2:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+
 #reading-pane h3 {
-  font-family: var(--font-ui);
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   margin-bottom: 1.5rem;
 }
+
+#reading-pane h3:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+
 
 #reading-pane p {
   margin-bottom: 1em;
 }
 
 
-
-
-/* ── Sentences ── */
+/* ─────────────────────────────
+   Sentences
+───────────────────────────── */
 .sentence {
-  cursor: pointer;
-  border-radius: 3px;
-  padding: 0 2px;
-  transition: background 0.15s ease;
   position: relative;
+  cursor: pointer;
+
+  padding: 0 2px;
+  border-radius: 3px;
+
+  transition: background 0.15s ease;
 }
 
 .sentence:hover {
@@ -120,42 +174,57 @@ header h1 {
 }
 
 .sentence:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-  background: var(--highlight);
+  background: var(--highlight-active);
+  border-radius: 4px;
+
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+
+  box-shadow:
+    0 0 0 6px rgba(245, 197, 66, 0.18),
+    0 0 16px 2px rgba(245, 197, 66, 0.22);
 }
 
 .sentence.annotated {
-  background: rgba(126, 170, 255, 0.10);
+  background: rgba(245, 197, 66, 0.1);
   border-bottom: 2px solid var(--accent);
 }
 
-.sentence.annotated:hover {
-  background: var(--highlight-active);
-}
-
+.sentence.annotated:hover,
 .sentence.active-select {
   background: var(--highlight-active);
 }
 
-/* Tooltip on annotated sentence hover */
+button.sentence {
+  all: unset;
+  cursor: pointer;
+   padding-left: 0.1rem;
+}
+
+/* Tooltip */
 .sentence.annotated::after {
   content: attr(data-note-preview);
+
   position: absolute;
-  bottom: calc(100% + 5px);
   left: 0;
-  background: #2a2d4a;
-  border: 1px solid var(--accent);
-  color: var(--text);
-  font-family: var(--font-ui);
-  font-size: 0.72rem;
-  padding: 0.35rem 0.6rem;
-  border-radius: 4px;
-  white-space: nowrap;
+  bottom: calc(100% + 5px);
+  z-index: 50;
+
   max-width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
-  z-index: 50;
+  white-space: nowrap;
+
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+
+  background: #2a2710;
+  border: 1px solid var(--accent);
+
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
@@ -165,49 +234,54 @@ header h1 {
   opacity: 1;
 }
 
-button.sentence {
-  all: unset;
-  cursor: pointer;
-}
 
-
-/* ── Annotation Pane ── */
+/* ─────────────────────────────
+   Annotation Pane
+───────────────────────────── */
 #annotation-pane {
-  overflow-y: auto;
-  padding: 2rem 1.5rem;
-  background: var(--annotation-bg);
   display: flex;
   flex-direction: column;
   gap: 0;
-  scrollbar-color: #3a4470 #1e2030;
+
+  overflow-y: auto;
+  padding: 2rem 1.5rem;
+
+  background: var(--annotation-bg);
+  scrollbar-color: #6b5a20 #1e1e20;
 }
 
 #annotation-pane h4 {
+  flex-shrink: 0;
+  margin-bottom: 1.25rem;
+
   font-family: var(--font-ui);
-  font-size: 1rem;
+  font-size: 1.15rem;        /* was 1rem */
   font-weight: 600;
-  color: var(--muted);
+  color: var(--grey);
+
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  margin-bottom: 1.25rem;
-  flex-shrink: 0;
 }
 
 
-/* ── Empty State ── */
+/* ─────────────────────────────
+   Empty State
+───────────────────────────── */
 .empty-state {
   display: flex;
+  flex: 1;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 1;
   gap: 0.75rem;
-  color: var(--muted);
+
+  padding: 2rem 0;
+
+  color: var(--grey);
   font-family: var(--font-ui);
-  font-size: 0.85rem;
+  font-size: 1rem;           /* was 0.85rem */
   text-align: center;
   opacity: 0.6;
-  padding: 2rem 0;
 }
 
 .empty-state .empty-icon {
@@ -216,56 +290,67 @@ button.sentence {
 }
 
 
-/* ── Annotation Input Card ── */
+/* ─────────────────────────────
+   Annotation Input Card
+───────────────────────────── */
 .annotation-input-card {
+  flex-shrink: 0;
+
+  margin-bottom: 1rem;
+  padding: 1.25rem;          /* was 1rem */
+  border-radius: 8px;
+
   background: var(--card-bg);
   border: 1.5px solid var(--accent);
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  animation: slideIn 0.18s ease;
-  flex-shrink: 0;
-}
 
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(-6px); }
-  to   { opacity: 1; transform: translateY(0); }
+  animation: slideIn 0.18s ease;
 }
 
 .annotation-input-card .ref-label {
+  margin-bottom: 0.4rem;
+
   font-family: var(--font-ui);
-  font-size: 0.7rem;
+  font-size: 0.85rem;        /* was 0.7rem */
   font-weight: 700;
   color: var(--accent);
+
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: 0.35rem;
 }
 
 .annotation-input-card .sentence-preview {
-  font-size: 0.82rem;
-  color: var(--muted);
-  font-style: italic;
-  margin-bottom: 0.75rem;
-  line-height: 1.5;
   display: -webkit-box;
+  overflow: hidden;
+
+  margin-bottom: 0.85rem;    /* was 0.75rem */
+
+  font-family: var(--font-ui);  /* explicit — no longer inherits serif body */
+  font-size: 1rem;           /* was 0.82rem */
+  font-weight: 700;          /* was normal weight */
+  font-style: normal;        /* was italic */
+  color: var(--text);        /* was var(--grey) / muted */
+  line-height: 1.5;
+
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .annotation-input-card textarea {
   width: 100%;
-  background: #1a1a2e;
-  border: 1.5px solid var(--annotation-border);
+  min-height: 80px;          /* was 70px */
+  resize: vertical;
+
+  padding: 0.6rem 0.75rem;   /* was 0.5rem 0.65rem */
   border-radius: 5px;
+
+  background: #1a1a10;
+  border: 1.5px solid var(--annotation-border);
+
   color: var(--text);
   font-family: var(--font-ui);
-  font-size: 0.85rem;
+  font-size: 1rem;           /* was 0.85rem */
   line-height: 1.5;
-  padding: 0.5rem 0.65rem;
-  resize: vertical;
-  min-height: 70px;
+
   transition: border-color 0.15s;
 }
 
@@ -275,33 +360,39 @@ button.sentence {
 }
 
 .annotation-input-card textarea::placeholder {
-  color: #555570;
+  color: #555540;
 }
 
 .annotation-input-card .input-actions {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.6rem;
   justify-content: flex-end;
+  gap: 0.5rem;
+
+  margin-top: 0.65rem;       /* was 0.6rem */
 }
 
 
-/* ── Buttons ── */
+/* ─────────────────────────────
+   Buttons
+───────────────────────────── */
 .btn {
-  font-family: var(--font-ui);
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 0.35rem 0.9rem;
-  border-radius: 4px;
-  border: none;
   cursor: pointer;
+
+  padding: 0.4rem 1rem;      /* was 0.35rem 0.9rem */
+  border: none;
+  border-radius: 4px;
+
+  font-family: var(--font-ui);
+  font-size: 0.9rem;         /* was 0.78rem */
+  font-weight: 600;
   letter-spacing: 0.02em;
+
   transition: background 0.15s, color 0.15s;
 }
 
 .btn-save {
   background: var(--accent);
-  color: #1a1a2e;
+  color: #1a1500;
 }
 
 .btn-save:hover {
@@ -310,43 +401,46 @@ button.sentence {
 
 .btn-cancel {
   background: transparent;
-  color: var(--muted);
+  color: var(--grey);
   border: 1.5px solid var(--border);
 }
 
 .btn-cancel:hover {
-  border-color: var(--muted);
   color: var(--text);
+  border-color: var(--grey);
+}
+
+.btn-edit,
+.btn-delete {
+  background: transparent;
+  font-size: 0.85rem;        /* was 0.72rem */
+  padding: 0.3rem 0.75rem;   /* was 0.25rem 0.65rem */
 }
 
 .btn-edit {
-  background: transparent;
   color: var(--accent);
   border: 1px solid var(--annotation-border);
-  font-size: 0.72rem;
-  padding: 0.25rem 0.65rem;
 }
 
 .btn-edit:hover {
+  background: rgba(245, 197, 66, 0.08);
   border-color: var(--accent);
-  background: rgba(126, 170, 255, 0.08);
 }
 
 .btn-delete {
-  background: transparent;
   color: var(--danger);
   border: 1px solid transparent;
-  font-size: 0.72rem;
-  padding: 0.25rem 0.65rem;
 }
 
 .btn-delete:hover {
-  border-color: var(--danger);
   background: rgba(255, 107, 107, 0.08);
+  border-color: var(--danger);
 }
 
 
-/* ── Saved Annotation Cards ── */
+/* ─────────────────────────────
+   Saved Annotation Cards
+───────────────────────────── */
 .annotation-list {
   display: flex;
   flex-direction: column;
@@ -354,13 +448,16 @@ button.sentence {
 }
 
 .annotation-card {
-  background: var(--surface);
-  border: 1px solid var(--card-border);
-  border-radius: 8px;
-  padding: 0.85rem 1rem;
-  animation: slideIn 0.2s ease;
   position: relative;
   cursor: pointer;
+
+  padding: 1rem 1.15rem;     /* was 0.85rem 1rem */
+  border-radius: 8px;
+
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+
+  animation: slideIn 0.2s ease;
 }
 
 .annotation-card:hover {
@@ -368,72 +465,83 @@ button.sentence {
 }
 
 .annotation-card .card-ref {
+  margin-bottom: 0.35rem;    /* was 0.3rem */
+
   font-family: var(--font-ui);
-  font-size: 0.68rem;
+  font-size: 0.8rem;         /* was 0.68rem */
   font-weight: 700;
   color: var(--accent);
+
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  margin-bottom: 0.3rem;
 }
 
 .annotation-card .card-sentence {
-  font-size: 0.8rem;
-  color: var(--muted);
-  font-style: italic;
-  margin-bottom: 0.5rem;
-  line-height: 1.45;
   display: -webkit-box;
+  overflow: hidden;
+
+  margin-bottom: 0.6rem;     /* was 0.5rem */
+
+  font-family: var(--font-ui);  /* explicit — no longer inherits serif body */
+  font-size: 0.95rem;        /* was 0.8rem */
+  font-weight: 700;          /* was normal weight */
+  font-style: normal;        /* was italic */
+  color: var(--text);        /* was var(--grey) / muted */
+  line-height: 1.45;
+
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
 .annotation-card .card-note {
-  font-family: var(--font-ui);
-  font-size: 0.83rem;
-  color: var(--text);
-  line-height: 1.5;
   white-space: pre-wrap;
   word-break: break-word;
+
+  font-family: var(--font-ui);
+  font-size: 0.95rem;        /* was 0.83rem */
+  color: var(--text);
+  line-height: 1.5;
 }
 
 .annotation-card .card-actions {
   display: flex;
-  gap: 0.4rem;
-  margin-top: 0.6rem;
   justify-content: flex-end;
+  gap: 0.4rem;
+
+  margin-top: 0.65rem;       /* was 0.6rem */
 }
 
 
-/* ── Screenreader ── */
+/* ─────────────────────────────
+   Screenreader
+───────────────────────────── */
 .sr-only {
   position: absolute;
+
   width: 1px;
   height: 1px;
-  padding: 0;
   margin: -1px;
+  padding: 0;
+
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
   white-space: nowrap;
+
+  clip: rect(0, 0, 0, 0);
   border: 0;
 }
 
 
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .layout {
-    grid-template-columns: 1fr;
-    height: auto;
+/* ─────────────────────────────
+   Keyframes
+───────────────────────────── */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
   }
 
-  #reading-pane {
-    border-right: none;
-    border-bottom: 2px solid var(--border);
-    height: 50vh;
-  }
-
-  #annotation-pane {
-    height: 50vh;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

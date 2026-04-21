@@ -6,7 +6,8 @@
   // ─────────────────────────────────────────────────────────────────────────────
 
   const annotations = {}; // key: "p{pIdx}-s{sIdx}" → { note, pIdx, sIdx, text }
-  let activeKey = null;   // key of the sentence currently selected for input
+  let activeKey = null;         // key of the sentence currently selected for input
+  let lastFocusedSentence = null; // key of the last sentence the user was on (even without annotating)
 
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -110,6 +111,7 @@
         span.insertAdjacentText('beforebegin', sIdx > 0 ? ' ' : '');
 
         span.addEventListener('click', () => selectSentence(key, span));
+        span.addEventListener('focus', () => { lastFocusedSentence = key; });
 
         p.appendChild(span);
       });
@@ -183,7 +185,9 @@
     card.querySelector('#btn-cancel-annotation').addEventListener('click', cancelInput);
 
     textarea.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        // Plain Enter saves; Shift+Enter inserts a newline (default behaviour)
+        e.preventDefault();
         saveAnnotation(key, pIdx, sIdx, sentText, textarea.value.trim());
       }
       if (e.key === 'Escape') cancelInput();
@@ -248,6 +252,8 @@
     removeInputCard();
     renderAnnotationCard(key);
     updateEmptyState();
+    // Return focus to the reading panel so the user can continue reading
+    focusPanel('reading');
   }
 
 
@@ -413,18 +419,198 @@
     });
 
     textarea.addEventListener('keydown', e => {
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) actions.querySelector('.btn-save').click();
+      if (e.key === 'Enter' && !e.shiftKey) {
+        // Plain Enter saves; Shift+Enter inserts a newline (default behaviour)
+        e.preventDefault();
+        actions.querySelector('.btn-save').click();
+      }
       if (e.key === 'Escape') actions.querySelector('.btn-cancel').click();
     });
   }
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INIT
-  // Entry point. Builds the sentence spans and shows the empty state.
+  // PANEL NAVIGATION: state
+  // Tracks which panel is currently active: 'reading' or 'annotation'.
   // ─────────────────────────────────────────────────────────────────────────────
 
+  let activePanel = 'reading'; // start in the reading panel
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PANEL NAVIGATION: announce
+  // Sends a message to the screen reader via an aria-live region without
+  // moving focus. Uses 'assertive' so it interrupts the current speech.
+  // The content is cleared and reset via requestAnimationFrame so repeating
+  // the same message still fires a new announcement.
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  function announce(message) {
+    const region = document.getElementById('sr-announcer');
+    if (!region) return;
+    region.textContent = '';
+    requestAnimationFrame(() => {
+      region.textContent = message;
+    });
+  }
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PANEL NAVIGATION: buildAnnouncerRegion
+  // Creates a visually hidden aria-live="assertive" element in the DOM.
+  // Screen readers watch this element and speak its content when it changes.
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  function buildAnnouncerRegion() {
+    const region = document.createElement('div');
+    region.id = 'sr-announcer';
+    region.setAttribute('aria-live', 'assertive');
+    region.setAttribute('aria-atomic', 'true');
+    Object.assign(region.style, {
+      position: 'absolute',
+      width: '1px',
+      height: '1px',
+      overflow: 'hidden',
+      clip: 'rect(0,0,0,0)',
+      whiteSpace: 'nowrap',
+    });
+    document.body.appendChild(region);
+  }
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PANEL NAVIGATION: focusPanel
+  // Moves keyboard focus into the given panel ('reading' or 'annotation') and
+  // announces what the user can do there.
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  function focusPanel(panel) {
+    activePanel = panel;
+
+    if (panel === 'reading') {
+      const resumeKey = lastFocusedSentence || activeKey;
+      const target =
+        (resumeKey && document.querySelector(`.sentence[data-key="${resumeKey}"]`)) ||
+        document.querySelector('.sentence');
+      if (target) target.focus();
+      announce(
+        'Leesvenster actief. ' +
+        'Gebruik Tab en Shift+Tab om door zinnen te navigeren. ' +
+        'Druk op Enter om een zin te annoteren. ' +
+        'Druk op de K-toets om naar het annotatievenster te gaan.'
+      );
+    } else {
+      const annotationPanel =
+        document.getElementById('annotation-panel') ||
+        document.getElementById('annotation-list');
+      const firstFocusable = annotationPanel
+        ? annotationPanel.querySelector('button, textarea, input, [tabindex="0"]')
+        : null;
+      if (firstFocusable) firstFocusable.focus();
+      else if (annotationPanel) annotationPanel.focus();
+      announce(
+        'Annotatievenster actief. ' +
+        'Gebruik Tab en Shift+Tab om door annotaties te navigeren. ' +
+        'Druk op de K-toets om terug te gaan naar het leesvenster.'
+      );
+    }
+  }
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PANEL NAVIGATION: handlePanelSwitch
+  // Global keydown listener. ArrowRight switches to the annotation panel,
+  // ArrowLeft switches back to reading — but only when focus is NOT inside a
+  // textarea or text input so the user can still type arrow characters freely.
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  function handlePanelSwitch(e) {
+    // Never intercept K while the user is typing in a text field
+    const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
+    const isTyping = tag === 'textarea' || tag === 'input';
+    if (isTyping) return;
+
+    if (e.key === 'k' || e.key === 'K') {
+      e.preventDefault();
+      // Toggle: reading → annotation, annotation → reading
+      focusPanel(activePanel === 'reading' ? 'annotation' : 'reading');
+    }
+  }
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PANEL NAVIGATION: trackActivePanelByFocus
+  // Keeps `activePanel` in sync when the user moves focus manually (e.g. with
+  // the mouse or Tab) so ArrowLeft/Right always switch in the right direction.
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  function trackActivePanelByFocus() {
+    document.addEventListener('focusin', e => {
+      const readingPanel = document.getElementById('text-content');
+      const annotationPanel =
+        document.getElementById('annotation-panel') ||
+        document.getElementById('annotation-list');
+
+      if (readingPanel && readingPanel.contains(e.target)) {
+        activePanel = 'reading';
+      } else if (annotationPanel && annotationPanel.contains(e.target)) {
+        activePanel = 'annotation';
+      }
+    });
+  }
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // PANEL NAVIGATION: announceStartupInstructions
+  // Waits a short moment after page load then reads the instructions once so
+  // the user knows how to use the tool before they start tabbing through text.
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  function announceStartupInstructions() {
+    // Hide the page content from the accessibility tree immediately so the
+    // screen reader does not read headings, paragraphs or other elements on
+    // load. The instructions are injected via the live region instead.
+    // aria-hidden is removed after the instructions finish playing (~4 s).
+    const contentAreas = [
+      document.getElementById('text-content'),
+      document.getElementById('annotation-panel') || document.getElementById('annotation-list'),
+      document.querySelector('header'),
+      document.querySelector('main'),
+      document.querySelector('h1'),
+      document.querySelector('h2'),
+      document.querySelector('nav'),
+    ].filter(Boolean);
+
+    contentAreas.forEach(el => el.setAttribute('aria-hidden', 'true'));
+
+    setTimeout(() => {
+      announce(
+        'Welkom bij het annotatiehulpmiddel. ' +
+        'De pagina is verdeeld in twee vensters: een leesvenster en een annotatievenster. ' +
+        'Gebruik Tab en Shift+Tab om door zinnen in het leesvenster te navigeren. ' +
+        'Druk op Enter om een geselecteerde zin te annoteren. ' +
+        'Druk op de K-toets om te wisselen tussen het leesvenster en het annotatievenster.'
+      );
+    }, 300);
+
+    // Restore the content areas after the instructions have had time to play
+    setTimeout(() => {
+      contentAreas.forEach(el => el.removeAttribute('aria-hidden'));
+    }, 5000);
+  }
+
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // INIT
+  // Entry point. Builds the sentence spans, sets up panel navigation, and reads
+  // out the startup instructions via the screen reader.
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  buildAnnouncerRegion();
   buildSentenceSpans();
   updateEmptyState();
+  trackActivePanelByFocus();
+  document.addEventListener('keydown', handlePanelSwitch);
+  announceStartupInstructions();
 
 })();
