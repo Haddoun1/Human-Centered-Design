@@ -1,19 +1,20 @@
 (function () {
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // STATE
-  // Holds all saved annotations and tracks which sentence is being edited.
+  // TOESTAND
+  // Bewaart alle opgeslagen annotaties en bijhoudt welke zin momenteel bewerkt wordt.
   // ─────────────────────────────────────────────────────────────────────────────
 
-  const annotations = {}; // key: "p{pIdx}-s{sIdx}" → { note, pIdx, sIdx, text }
-  let activeKey = null;         // key of the sentence currently selected for input
-  let lastFocusedSentence = null; // key of the last sentence the user was on (even without annotating)
+  const annotations = {}; // sleutel: "p{pIdx}-s{sIdx}" → { note, pIdx, sIdx, text }
+  let activeKey = null;         // sleutel van de zin die momenteel geselecteerd is voor invoer
+  let lastFocusedSentence = null; // sleutel van de laatste zin waar de gebruiker op was (ook zonder annotatie)
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // UTILITY: escHtml
-  // Escapes special HTML characters so user text is safe to inject into innerHTML.
-  // Safe to delete if you never insert user content via innerHTML.
+  // HULPFUNCTIE: escHtml
+  // Escapet speciale HTML-tekens zodat gebruikerstekst veilig via innerHTML
+  // kan worden ingevoegd. Mag worden verwijderd als je nooit gebruikersinhoud
+  // via innerHTML invoegt.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function escHtml(str) {
@@ -26,9 +27,9 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // UTILITY: splitSentences
-  // Splits a block of text into individual sentences based on .!? punctuation.
-  // Returns an array of sentence strings.
+  // HULPFUNCTIE: splitSentences
+  // Splitst een tekstblok in afzonderlijke zinnen op basis van .!? leestekens.
+  // Geeft een array van zinstrings terug.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function splitSentences(text) {
@@ -43,7 +44,7 @@
       lastIndex = re.lastIndex;
     }
 
-    // Catch any trailing text without punctuation
+    // Vang eventuele resterende tekst op zonder leesteken aan het einde
     const tail = raw.slice(lastIndex).trim();
     if (tail) parts.push(tail);
 
@@ -52,9 +53,10 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // UTILITY: updateEmptyState
-  // Shows or hides the "#empty-state" element depending on whether there are
-  // any annotations or an active input card. Call after any add/remove action.
+  // HULPFUNCTIE: updateEmptyState
+  // Toont of verbergt het "#empty-state" element afhankelijk van of er
+  // annotaties zijn of een actieve invoerkaart. Roep aan na elke toevoeg-/
+  // verwijderactie.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function updateEmptyState() {
@@ -67,9 +69,9 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // UTILITY: scrollToSentence
-  // Smoothly scrolls the page so the sentence span for a given key is visible,
-  // then focuses it for keyboard users.
+  // HULPFUNCTIE: scrollToSentence
+  // Scrolt de pagina vloeiend zodat de zinspan voor een bepaalde sleutel
+  // zichtbaar is, en focust deze daarna voor toetsenbordgebruikers.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function scrollToSentence(key) {
@@ -82,10 +84,10 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // BUILD: buildSentenceSpans
-  // Reads every <p> inside #text-content, splits the text into sentences, and
-  // replaces the raw text with individual <span class="sentence"> elements.
-  // Each span gets click + keyboard handlers that call selectSentence().
+  // OPBOUW: buildSentenceSpans
+  // Leest elke <p> binnen #text-content, splitst de tekst in zinnen, en
+  // vervangt de ruwe tekst door afzonderlijke <span class="sentence"> elementen.
+  // Elke span krijgt klik- en toetsenbordhandlers die selectSentence() aanroepen.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function buildSentenceSpans() {
@@ -103,11 +105,11 @@
         span.dataset.key = key;
         span.dataset.pIdx = pIdx;
         span.dataset.sIdx = sIdx;
-        // No aria-label needed — button reads its own text content,
-        // and "knop" / "gebied klikbaar" announcements are gone.
+        // Geen aria-label nodig — de knop leest zijn eigen tekstinhoud voor,
+        // en "knop" / "gebied klikbaar" aankondigingen zijn weggelaten.
         span.textContent = sent;
 
-        // Add a space before every sentence except the first
+        // Voeg een spatie toe vóór elke zin behalve de eerste
         span.insertAdjacentText('beforebegin', sIdx > 0 ? ' ' : '');
 
         span.addEventListener('click', () => selectSentence(key, span));
@@ -120,10 +122,11 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INTERACTION: selectSentence
-  // Called when the user clicks or presses Enter/Space on a sentence span.
-  // - If the sentence already has an annotation → open edit mode.
-  // - Otherwise → deselect any other active sentence, then show the input card.
+  // INTERACTIE: selectSentence
+  // Wordt aangeroepen wanneer de gebruiker op een zinspan klikt of Enter/Spatie
+  // indrukt.
+  // - Als de zin al een annotatie heeft → open bewerkingsmodus.
+  // - Anders → deselecteer de vorige actieve zin, toon dan de invoerkaart.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function selectSentence(key, span) {
@@ -132,7 +135,7 @@
       return;
     }
 
-    // Deselect the previously active sentence if it's a different one
+    // Deselecteer de vorige actieve zin als het een andere is
     if (activeKey && activeKey !== key) {
       document.querySelectorAll('.sentence').forEach(s => s.classList.remove('active-select'));
       removeInputCard();
@@ -149,13 +152,14 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INPUT CARD: showInputCard
-  // Inserts a temporary card at the top of #annotation-list where the user can
-  // type their annotation. Wires up Save / Cancel buttons and Ctrl+Enter / Esc.
+  // INVOERKAART: showInputCard
+  // Voegt een tijdelijke kaart in bovenaan #annotation-list waar de gebruiker
+  // zijn annotatie kan typen. Koppelt Opslaan / Annuleer knoppen en
+  // Ctrl+Enter / Esc toetsen.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function showInputCard(key, pIdx, sIdx, sentText) {
-    removeInputCard(); // Clear any pre-existing card first
+    removeInputCard(); // Verwijder eventuele bestaande kaart eerst
     updateEmptyState();
 
     const card = document.createElement('div');
@@ -165,7 +169,7 @@
     card.innerHTML = `
       <div class="ref-label">Alinea ${pIdx + 1} · Zin ${sIdx + 1}</div>
       <div class="sentence-preview">${escHtml(sentText)}</div>
-      <textarea id="note-textarea" placeholder="Schrijf hier uw annotatie…" rows="3"></textarea>
+      <textarea id="note-textarea" placeholder="" rows="3"></textarea>
       <div class="input-actions">
         <button class="btn btn-cancel" id="btn-cancel-annotation">Annuleer</button>
         <button class="btn btn-save"   id="btn-save-annotation">Opslaan</button>
@@ -186,7 +190,7 @@
 
     textarea.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) {
-        // Plain Enter saves; Shift+Enter inserts a newline (default behaviour)
+        // Gewone Enter slaat op; Shift+Enter voegt een nieuwe regel in (standaardgedrag)
         e.preventDefault();
         saveAnnotation(key, pIdx, sIdx, sentText, textarea.value.trim());
       }
@@ -198,9 +202,9 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INPUT CARD: removeInputCard
-  // Removes the active input card from the DOM if it exists.
-  // Standalone — safe to call even when no card is present.
+  // INVOERKAART: removeInputCard
+  // Verwijdert de actieve invoerkaart uit de DOM als die bestaat.
+  // Op zichzelf staand — veilig aan te roepen ook als er geen kaart aanwezig is.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function removeInputCard() {
@@ -210,9 +214,9 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INPUT CARD: cancelInput
-  // Removes the active selection highlight, clears activeKey, removes the input
-  // card, and updates the empty state message.
+  // INVOERKAART: cancelInput
+  // Verwijdert de actieve selectiemarkering, wist activeKey, verwijdert de
+  // invoerkaart en werkt de lege-toestand melding bij.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function cancelInput() {
@@ -227,10 +231,10 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATION: saveAnnotation
-  // Persists a new annotation to the `annotations` object, marks the sentence
-  // span as annotated, and renders the saved annotation card in the sidebar.
-  // If the note is empty, cancels instead of saving.
+  // ANNOTATIE: saveAnnotation
+  // Slaat een nieuwe annotatie op in het `annotations` object, markeert de
+  // zinspan als geannoteerd en toont de opgeslagen annotatiekaart in de zijbalk.
+  // Als de notitie leeg is, wordt geannuleerd in plaats van opgeslagen.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function saveAnnotation(key, pIdx, sIdx, sentText, note) {
@@ -252,23 +256,23 @@
     removeInputCard();
     renderAnnotationCard(key);
     updateEmptyState();
-    // Return focus to the reading panel so the user can continue reading
+    // Geef focus terug aan het leesvenster zodat de gebruiker verder kan lezen
     focusPanel('reading');
   }
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATION: renderAnnotationCard
-  // Creates (or re-creates) a saved annotation card for the given key and inserts
-  // it into #annotation-list in document order (by paragraph, then sentence).
-  // Wires up Edit / Delete buttons and a click-to-scroll on the card body.
+  // ANNOTATIE: renderAnnotationCard
+  // Maakt een opgeslagen annotatiekaart aan (of opnieuw aan) voor de gegeven
+  // sleutel en voegt deze in volgorde in #annotation-list in (op alinea, dan zin).
+  // Koppelt Bewerken / Verwijderen knoppen en klikken-om-te-scrollen op de kaart.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function renderAnnotationCard(key) {
     const a = annotations[key];
     if (!a) return;
 
-    // Remove any existing card for this key before re-rendering
+    // Verwijder eventuele bestaande kaart voor deze sleutel vóór het opnieuw renderen
     const existing = document.querySelector(`.annotation-card[data-key="${key}"]`);
     if (existing) existing.remove();
 
@@ -289,20 +293,20 @@
     card.querySelector('.btn-edit').addEventListener('click', () => openEditMode(key));
     card.querySelector('.btn-delete').addEventListener('click', () => deleteAnnotation(key));
 
-    // Clicking the card body (not buttons) scrolls to the sentence in the text
+    // Klikken op de kaartinhoud (niet de knoppen) scrolt naar de zin in de tekst
     card.addEventListener('click', e => {
       if (!e.target.classList.contains('btn')) scrollToSentence(key);
     });
 
-    // Insert the card in reading order
+    // Voeg de kaart in leesvolgorde in
     insertCardInOrder(card, a);
   }
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATION: insertCardInOrder
-  // Finds the correct position in #annotation-list to insert `card` so that all
-  // cards remain sorted by paragraph index, then sentence index.
+  // ANNOTATIE: insertCardInOrder
+  // Zoekt de juiste positie in #annotation-list om `card` in te voegen zodat
+  // alle kaarten gesorteerd blijven op alinea-index, daarna zinindex.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function insertCardInOrder(card, annotation) {
@@ -324,9 +328,9 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATION: deleteAnnotation
-  // Removes an annotation from state, strips the highlight from the sentence
-  // span, removes the card from the sidebar, and updates the empty state.
+  // ANNOTATIE: deleteAnnotation
+  // Verwijdert een annotatie uit de toestand, haalt de markering van de zinspan
+  // weg, verwijdert de kaart uit de zijbalk en werkt de lege-toestand bij.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function deleteAnnotation(key) {
@@ -346,23 +350,24 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATION: openEditMode
-  // Transforms an existing saved annotation card into an inline edit form.
-  // Replaces the note text and action buttons with a textarea + Save/Cancel.
-  // On save it updates `annotations` and re-renders the card.
-  // On cancel it just re-renders the card as it was.
+  // ANNOTATIE: openEditMode
+  // Transformeert een bestaande opgeslagen annotatiekaart naar een inline
+  // bewerkingsformulier. Vervangt de notitietekst en actieknoppen door een
+  // textarea + Opslaan/Annuleer. Bij opslaan wordt `annotations` bijgewerkt en
+  // de kaart opnieuw gerenderd. Bij annuleren wordt de kaart ongewijzigd
+  // opnieuw gerenderd.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function openEditMode(key) {
     const a = annotations[key];
     if (!a) return;
 
-    removeInputCard(); // close any floating input card
+    removeInputCard(); // sluit eventuele zwevende invoerkaart
 
     const existingCard = document.querySelector(`.annotation-card[data-key="${key}"]`);
     if (!existingCard) return;
 
-    // Swap the note element for a textarea
+    // Vervang het notitie-element door een textarea
     const noteEl = existingCard.querySelector('.card-note');
     const actionsEl = existingCard.querySelector('.card-actions');
 
@@ -397,12 +402,12 @@
     actions.querySelector('.btn-save').addEventListener('click', () => {
       const newNote = textarea.value.trim();
       if (!newNote) {
-        deleteAnnotation(key); // empty save = delete
+        deleteAnnotation(key); // lege opslag = verwijderen
         return;
       }
       annotations[key].note = newNote;
 
-      // Update the tooltip preview on the sentence span
+      // Werk de tooltipvoorvertoning bij op de zinspan
       const span = document.querySelector(`.sentence[data-key="${key}"]`);
       if (span) {
         span.dataset.notePreview = newNote.length > 50 ? newNote.slice(0, 50) + '…' : newNote;
@@ -415,12 +420,12 @@
 
     actions.querySelector('.btn-cancel').addEventListener('click', () => {
       existingCard.remove();
-      renderAnnotationCard(key); // re-render original card
+      renderAnnotationCard(key); // render originele kaart opnieuw
     });
 
     textarea.addEventListener('keydown', e => {
       if (e.key === 'Enter' && !e.shiftKey) {
-        // Plain Enter saves; Shift+Enter inserts a newline (default behaviour)
+        // Gewone Enter slaat op; Shift+Enter voegt een nieuwe regel in (standaardgedrag)
         e.preventDefault();
         actions.querySelector('.btn-save').click();
       }
@@ -430,19 +435,20 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PANEL NAVIGATION: state
-  // Tracks which panel is currently active: 'reading' or 'annotation'.
+  // VENSTERNAVIGATIE: toestand
+  // Bijhouden welk venster momenteel actief is: 'reading' of 'annotation'.
   // ─────────────────────────────────────────────────────────────────────────────
 
-  let activePanel = 'reading'; // start in the reading panel
+  let activePanel = 'reading'; // begin in het leesvenster
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PANEL NAVIGATION: announce
-  // Sends a message to the screen reader via an aria-live region without
-  // moving focus. Uses 'assertive' so it interrupts the current speech.
-  // The content is cleared and reset via requestAnimationFrame so repeating
-  // the same message still fires a new announcement.
+  // VENSTERNAVIGATIE: announce
+  // Stuurt een bericht naar de schermlezer via een aria-live regio zonder
+  // focus te verplaatsen. Gebruikt 'assertive' zodat het de huidige spraak
+  // onderbreekt. De inhoud wordt via requestAnimationFrame gewist en opnieuw
+  // ingesteld zodat hetzelfde bericht herhalen toch een nieuwe aankondiging
+  // activeert.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function announce(message) {
@@ -456,9 +462,10 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PANEL NAVIGATION: buildAnnouncerRegion
-  // Creates a visually hidden aria-live="assertive" element in the DOM.
-  // Screen readers watch this element and speak its content when it changes.
+  // VENSTERNAVIGATIE: buildAnnouncerRegion
+  // Maakt een visueel verborgen aria-live="assertive" element in de DOM aan.
+  // Schermlezers bewaken dit element en spreken de inhoud uit wanneer het
+  // verandert.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function buildAnnouncerRegion() {
@@ -479,9 +486,9 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PANEL NAVIGATION: focusPanel
-  // Moves keyboard focus into the given panel ('reading' or 'annotation') and
-  // announces what the user can do there.
+  // VENSTERNAVIGATIE: focusPanel
+  // Verplaatst toetsenbordfocus naar het gegeven venster ('reading' of
+  // 'annotation') en kondigt aan wat de gebruiker daar kan doen.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function focusPanel(panel) {
@@ -518,30 +525,32 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PANEL NAVIGATION: handlePanelSwitch
-  // Global keydown listener. ArrowRight switches to the annotation panel,
-  // ArrowLeft switches back to reading — but only when focus is NOT inside a
-  // textarea or text input so the user can still type arrow characters freely.
+  // VENSTERNAVIGATIE: handlePanelSwitch
+  // Globale keydown-luisteraar. K schakelt naar het annotatievenster,
+  // nogmaals K schakelt terug naar lezen — maar alleen wanneer de focus NIET
+  // in een textarea of tekstinvoer staat zodat de gebruiker nog steeds vrij
+  // tekst kan typen.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function handlePanelSwitch(e) {
-    // Never intercept K while the user is typing in a text field
+    // Nooit K onderscheppen terwijl de gebruiker typt in een tekstveld
     const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
     const isTyping = tag === 'textarea' || tag === 'input';
     if (isTyping) return;
 
     if (e.key === 'k' || e.key === 'K') {
       e.preventDefault();
-      // Toggle: reading → annotation, annotation → reading
+      // Schakelen: lezen → annotatie, annotatie → lezen
       focusPanel(activePanel === 'reading' ? 'annotation' : 'reading');
     }
   }
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PANEL NAVIGATION: trackActivePanelByFocus
-  // Keeps `activePanel` in sync when the user moves focus manually (e.g. with
-  // the mouse or Tab) so ArrowLeft/Right always switch in the right direction.
+  // VENSTERNAVIGATIE: trackActivePanelByFocus
+  // Houdt `activePanel` gesynchroniseerd wanneer de gebruiker handmatig focus
+  // verplaatst (bijv. met de muis of Tab) zodat K altijd in de juiste richting
+  // schakelt.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function trackActivePanelByFocus() {
@@ -561,16 +570,17 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // PANEL NAVIGATION: announceStartupInstructions
-  // Waits a short moment after page load then reads the instructions once so
-  // the user knows how to use the tool before they start tabbing through text.
+  // VENSTERNAVIGATIE: announceStartupInstructions
+  // Wacht een kort moment na het laden van de pagina en leest de instructies
+  // eenmaal voor zodat de gebruiker weet hoe het hulpmiddel werkt voordat hij
+  // door de tekst begint te tabben.
   // ─────────────────────────────────────────────────────────────────────────────
 
   function announceStartupInstructions() {
-    // Hide the page content from the accessibility tree immediately so the
-    // screen reader does not read headings, paragraphs or other elements on
-    // load. The instructions are injected via the live region instead.
-    // aria-hidden is removed after the instructions finish playing (~4 s).
+    // Verberg de pagina-inhoud direct uit de toegankelijkheidsstructuur zodat
+    // de schermlezer bij het laden geen koppen, alinea's of andere elementen
+    // voorleest. De instructies worden via de live regio ingevoegd.
+    // aria-hidden wordt na de instructies verwijderd (~4 s).
     const contentAreas = [
       document.getElementById('text-content'),
       document.getElementById('annotation-panel') || document.getElementById('annotation-list'),
@@ -585,7 +595,7 @@
 
     setTimeout(() => {
       announce(
-        'Welkom bij het annotatiehulpmiddel. ' +
+        'Welkom. ' +
         'De pagina is verdeeld in twee vensters: een leesvenster en een annotatievenster. ' +
         'Gebruik Tab en Shift+Tab om door zinnen in het leesvenster te navigeren. ' +
         'Druk op Enter om een geselecteerde zin te annoteren. ' +
@@ -593,7 +603,7 @@
       );
     }, 300);
 
-    // Restore the content areas after the instructions have had time to play
+    // Herstel de inhoudsgebieden nadat de instructies tijd hebben gehad om voor te worden gelezen
     setTimeout(() => {
       contentAreas.forEach(el => el.removeAttribute('aria-hidden'));
     }, 5000);
@@ -601,9 +611,9 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INIT
-  // Entry point. Builds the sentence spans, sets up panel navigation, and reads
-  // out the startup instructions via the screen reader.
+  // INITIALISATIE
+  // Startpunt. Bouwt de zinspans, stelt vensternavigatie in en leest de
+  // opstartinstructies voor via de schermlezer.
   // ─────────────────────────────────────────────────────────────────────────────
 
   buildAnnouncerRegion();
