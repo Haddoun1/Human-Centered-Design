@@ -1,7 +1,6 @@
 (function () {
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // TOESTAND
   // Bewaart alle opgeslagen annotaties en bijhoudt welke zin momenteel bewerkt wordt.
   // ─────────────────────────────────────────────────────────────────────────────
 
@@ -11,7 +10,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // HULPFUNCTIE: escHtml
   // Escapet speciale HTML-tekens zodat gebruikerstekst veilig via innerHTML
   // kan worden ingevoegd. Mag worden verwijderd als je nooit gebruikersinhoud
   // via innerHTML invoegt.
@@ -27,7 +25,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // HULPFUNCTIE: splitSentences
   // Splitst een tekstblok in afzonderlijke zinnen op basis van .!? leestekens.
   // Geeft een array van zinstrings terug.
   // ─────────────────────────────────────────────────────────────────────────────
@@ -53,7 +50,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // HULPFUNCTIE: updateEmptyState
   // Toont of verbergt het "#empty-state" element afhankelijk van of er
   // annotaties zijn of een actieve invoerkaart. Roep aan na elke toevoeg-/
   // verwijderactie.
@@ -69,7 +65,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // HULPFUNCTIE: scrollToSentence
   // Scrolt de pagina vloeiend zodat de zinspan voor een bepaalde sleutel
   // zichtbaar is, en focust deze daarna voor toetsenbordgebruikers.
   // ─────────────────────────────────────────────────────────────────────────────
@@ -84,7 +79,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // OPBOUW: buildSentenceSpans
   // Leest elke <p> binnen #text-content, splitst de tekst in zinnen, en
   // vervangt de ruwe tekst door afzonderlijke <span class="sentence"> elementen.
   // Elke span krijgt klik- en toetsenbordhandlers die selectSentence() aanroepen.
@@ -122,7 +116,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INTERACTIE: selectSentence
   // Wordt aangeroepen wanneer de gebruiker op een zinspan klikt of Enter/Spatie
   // indrukt.
   // - Als de zin al een annotatie heeft → open bewerkingsmodus.
@@ -152,7 +145,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INVOERKAART: showInputCard
   // Voegt een tijdelijke kaart in bovenaan #annotation-list waar de gebruiker
   // zijn annotatie kan typen. Koppelt Opslaan / Annuleer knoppen en
   // Ctrl+Enter / Esc toetsen.
@@ -202,7 +194,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INVOERKAART: removeInputCard
   // Verwijdert de actieve invoerkaart uit de DOM als die bestaat.
   // Op zichzelf staand — veilig aan te roepen ook als er geen kaart aanwezig is.
   // ─────────────────────────────────────────────────────────────────────────────
@@ -214,7 +205,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INVOERKAART: cancelInput
   // Verwijdert de actieve selectiemarkering, wist activeKey, verwijdert de
   // invoerkaart en werkt de lege-toestand melding bij.
   // ─────────────────────────────────────────────────────────────────────────────
@@ -231,7 +221,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATIE: saveAnnotation
   // Slaat een nieuwe annotatie op in het `annotations` object, markeert de
   // zinspan als geannoteerd en toont de opgeslagen annotatiekaart in de zijbalk.
   // Als de notitie leeg is, wordt geannuleerd in plaats van opgeslagen.
@@ -262,7 +251,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATIE: renderAnnotationCard
   // Maakt een opgeslagen annotatiekaart aan (of opnieuw aan) voor de gegeven
   // sleutel en voegt deze in volgorde in #annotation-list in (op alinea, dan zin).
   // Koppelt Bewerken / Verwijderen knoppen en klikken-om-te-scrollen op de kaart.
@@ -304,7 +292,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATIE: insertCardInOrder
   // Zoekt de juiste positie in #annotation-list om `card` in te voegen zodat
   // alle kaarten gesorteerd blijven op alinea-index, daarna zinindex.
   // ─────────────────────────────────────────────────────────────────────────────
@@ -328,7 +315,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATIE: deleteAnnotation
   // Verwijdert een annotatie uit de toestand, haalt de markering van de zinspan
   // weg, verwijdert de kaart uit de zijbalk en werkt de lege-toestand bij.
   // ─────────────────────────────────────────────────────────────────────────────
@@ -350,7 +336,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // ANNOTATIE: openEditMode
   // Transformeert een bestaande opgeslagen annotatiekaart naar een inline
   // bewerkingsformulier. Vervangt de notitietekst en actieknoppen door een
   // textarea + Opslaan/Annuleer. Bij opslaan wordt `annotations` bijgewerkt en
@@ -402,12 +387,12 @@
     actions.querySelector('.btn-save').addEventListener('click', () => {
       const newNote = textarea.value.trim();
       if (!newNote) {
-        deleteAnnotation(key); // lege opslag = verwijderen
+        deleteAnnotation(key);
         return;
       }
       annotations[key].note = newNote;
 
-      // Werk de tooltipvoorvertoning bij op de zinspan
+     
       const span = document.querySelector(`.sentence[data-key="${key}"]`);
       if (span) {
         span.dataset.notePreview = newNote.length > 50 ? newNote.slice(0, 50) + '…' : newNote;
@@ -420,7 +405,7 @@
 
     actions.querySelector('.btn-cancel').addEventListener('click', () => {
       existingCard.remove();
-      renderAnnotationCard(key); // render originele kaart opnieuw
+      renderAnnotationCard(key); 
     });
 
     textarea.addEventListener('keydown', e => {
@@ -435,7 +420,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // VENSTERNAVIGATIE: toestand
   // Bijhouden welk venster momenteel actief is: 'reading' of 'annotation'.
   // ─────────────────────────────────────────────────────────────────────────────
 
@@ -443,7 +427,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // VENSTERNAVIGATIE: announce
   // Stuurt een bericht naar de schermlezer via een aria-live regio zonder
   // focus te verplaatsen. Gebruikt 'assertive' zodat het de huidige spraak
   // onderbreekt. De inhoud wordt via requestAnimationFrame gewist en opnieuw
@@ -462,7 +445,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // VENSTERNAVIGATIE: buildAnnouncerRegion
   // Maakt een visueel verborgen aria-live="assertive" element in de DOM aan.
   // Schermlezers bewaken dit element en spreken de inhoud uit wanneer het
   // verandert.
@@ -486,7 +468,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // VENSTERNAVIGATIE: focusPanel
   // Verplaatst toetsenbordfocus naar het gegeven venster ('reading' of
   // 'annotation') en kondigt aan wat de gebruiker daar kan doen.
   // ─────────────────────────────────────────────────────────────────────────────
@@ -525,29 +506,42 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // VENSTERNAVIGATIE: handlePanelSwitch
-  // Globale keydown-luisteraar. K schakelt naar het annotatievenster,
-  // nogmaals K schakelt terug naar lezen — maar alleen wanneer de focus NIET
+  // Globale keydown-luisteraar. alt J schakelt naar het annotatievenster,
+  // nogmaals alt J schakelt terug naar lezen — maar alleen wanneer de focus NIET
   // in een textarea of tekstinvoer staat zodat de gebruiker nog steeds vrij
   // tekst kan typen.
   // ─────────────────────────────────────────────────────────────────────────────
 
-  function handlePanelSwitch(e) {
-    // Nooit K onderscheppen terwijl de gebruiker typt in een tekstveld
-    const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
-    const isTyping = tag === 'textarea' || tag === 'input';
-    if (isTyping) return;
+ function handlePanelSwitch(e) {
 
-    if (e.key === 'k' || e.key === 'K') {
-      e.preventDefault();
-      // Schakelen: lezen → annotatie, annotatie → lezen
-      focusPanel(activePanel === 'reading' ? 'annotation' : 'reading');
+  // Nooit sneltoetsen onderscheppen terwijl de gebruiker typt
+  const activeElement = document.activeElement;
+  const tag = activeElement && activeElement.tagName.toLowerCase();
+
+  const isTyping =
+    tag === 'textarea' ||
+    tag === 'input' ||
+    activeElement.isContentEditable;
+
+  if (isTyping) return;
+
+
+  // ALT + J schakelt tussen lees- en annotatievenster
+  if (e.altKey && e.key.toLowerCase() === 'j') {
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Schakelen tussen de twee panelen
+    if (activePanel === 'reading') {
+      focusPanel('annotation');
+    } else {
+      focusPanel('reading');
     }
   }
-
+}
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // VENSTERNAVIGATIE: trackActivePanelByFocus
   // Houdt `activePanel` gesynchroniseerd wanneer de gebruiker handmatig focus
   // verplaatst (bijv. met de muis of Tab) zodat K altijd in de juiste richting
   // schakelt.
@@ -570,7 +564,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // VENSTERNAVIGATIE: announceStartupInstructions
   // Wacht een kort moment na het laden van de pagina en leest de instructies
   // eenmaal voor zodat de gebruiker weet hoe het hulpmiddel werkt voordat hij
   // door de tekst begint te tabben.
@@ -599,7 +592,7 @@
         'De pagina is verdeeld in twee vensters: een leesvenster en een annotatievenster. ' +
         'Gebruik Tab en Shift+Tab om door zinnen in het leesvenster te navigeren. ' +
         'Druk op Enter om een geselecteerde zin te annoteren. ' +
-        'Druk op de K-toets om te wisselen tussen het leesvenster en het annotatievenster.'
+        'Druk op Alt + J om te wisselen tussen het leesvenster en het annotatievenster.'
       );
     }, 300);
 
@@ -611,7 +604,6 @@
 
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // INITIALISATIE
   // Startpunt. Bouwt de zinspans, stelt vensternavigatie in en leest de
   // opstartinstructies voor via de schermlezer.
   // ─────────────────────────────────────────────────────────────────────────────
