@@ -23,7 +23,7 @@ Website voor het vak HCD (Human Centered Design)
 <h3>Wat heb ik gedaan vandaag?</h3>
 <p>We hebben een gesprek gehad met Roger en ik heb allerlei inzichten gekregen door het gesprek. We kregen wat meer te weten van hoe zijn conditie er uitziet en hoe het hem beïnvloedt in zijn dagelijks leven. Ik had een kleine prototype gemaakt waar ik dacht dat het zou werken. Maar uiteindelijk bleek dat niet zo te zijn. Ik had voor het gesprek onderzoek gedaan naar Roger zijn aandoening en ik zag het als alleen maar een vlekje in de midden van zijn zicht. Ik heb daarom een tekst column gemaakt dat verplaatst kan worden naar de zijkant. Ik wist dus niet dat het midden van zijn zicht bepaald is door de kant waar hij kijkt. Dus als hij focust op een tekst dan wordt de tekst bedekt ookal is het aan de zijkant, midden of onder aan het scherm. Dit heeft me laten zien dat testen en vragen stellen een hele belangrijke stap is van alles. We hebben verder nog besproken wat Roger nou eigenlijk wil zien. </p>
 
-<img src="images/afbeelding4.png" width="400">
+<img src="images/afbeelding4.png" width="800">
 
 <h3>Hoelang heb ik er aan gewerkt?</h3>
 <p>
