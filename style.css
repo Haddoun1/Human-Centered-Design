@@ -128,7 +128,6 @@ header h1 {
   outline-offset: 3px;
 }
 
-
 #reading-pane h3 {
   margin-bottom: 1.5rem;
 }
@@ -137,8 +136,6 @@ header h1 {
   outline: 3px solid var(--accent);
   outline-offset: 3px;
 }
-
-
 
 #reading-pane p {
   margin-bottom: 1em;
@@ -344,7 +341,6 @@ button.sentence {
   font-size: 0.9rem;
   font-weight: 600;
   letter-spacing: 0.02em;
-
   transition: background 0.15s, color 0.15s;
 }
 
@@ -398,11 +394,16 @@ button.sentence {
 
 /* ─────────────────────────────
    Saved Annotation Cards
+   annotation-list is a <ul>, annotation-card is a <li>
 ───────────────────────────── */
 .annotation-list {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  /* Remove default <ul> chrome */
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
 .annotation-card {
@@ -413,6 +414,7 @@ button.sentence {
   background: var(--surface);
   border: 1px solid var(--card-border);
   animation: slideIn 0.2s ease;
+  /* Reset <li> default margin/padding already handled by * reset */
 }
 
 .annotation-card:hover {
@@ -425,7 +427,6 @@ button.sentence {
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--accent);
-
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -451,13 +452,36 @@ button.sentence {
   font-size: 0.95rem;
   color: var(--text);
   line-height: 1.5;
+  /* <p> reset */
+  margin: 0;
 }
 
+/* card-actions is now a <ul> — strip list styling, keep flex layout */
 .annotation-card .card-actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.4rem;
   margin-top: 0.65rem;
+  /* Remove <ul> defaults */
+  list-style: none;
+  padding: 0;
+}
+
+/* The <li> wrappers inside card-actions are purely structural */
+.annotation-card .card-actions li {
+  display: contents; /* makes the <li> invisible to layout; only the <button> matters */
+}
+
+.card-sentence,
+.card-note {
+  border-radius: 4px;
+}
+
+.card-sentence:focus,
+.card-note:focus {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+  background: var(--highlight-active);
 }
 
 
