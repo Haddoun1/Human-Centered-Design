@@ -130,5 +130,21 @@ Ik ben ongeveer 2 uurtjes voor het gesprek bezig geweest met het maken van een p
 <h3>Bronnen</h3>
 <p>Geen bronnen gebruikt vandaag.</p>
 
+<h2>Herkansing</h2>
+<p>Ik heb na het gesprek met Leonie nog een paar aanpassingen gedaan die mijn prototype nog beter maken. Als eerst wil ik dat bij elke zin de screenreader stopt met het lezen van wat de geselecteerde veld is. In mijn geval is dat "knop" omdat het letterlijk een knop is. Ik heb dit kunnen fixen door de knop te veranderen naar een "span". Ik moest wel een aria label toevoegen en een tabindex zodat het nogsteeds klikbaar is. Verder heb ik gekeken of ik de navigate voor de navigate panel kan verbeteren. Ik wil kunnen tabben door de verschillende annotaties als die zijn gemaakt. Ik heb dit kunnen fixen om de annotaties in een lijst te zetten. Dit is ook het juiste manier volgens Leonie. Tot slot moest ik beter documenteren hoe ik de principes van Vasilis heb toegepast in mijn website. Dit doe ik hieronder. </p>
 
+<h2>Exclusive design principes</h2>
+<p>Je hebt de volgende principes van exclusive design:</p>
+<ul>
+<li>Study situation</li>
+<li>Ignore conventions</li>
+<li>Prioritise identity</li>
+<li>Add nonsense</li>
+</ul>
+<p>Voor study situation heb ik veel onderzoek gedaan naar wat Roger precies geeft en wat hij nodig heeft. Hier kom je achter als je gaat testen. Je moet zoveel mogelijk vragen stellen en luisteren naar de gebruiker. Roger wordt steeds blinder en moet daarom steeds meer gebruik maken van zijn screenreader. Dus het is slim dat je begint met een prototype dat goed werkt met een screenreader. Het is ook belangrijk dat je geen input geeft wanneer een test persoon je prototype test. Je moet alleen maar luisteren en vragen stellen.
+</p>
+<p>Voor ignore conventions is het een beetje het zelfde als study situation. Je kan niet kijken naar conventions wanneer iedereen anders is. Roger wilt bijvoorbeeld erge contrasten en grote tekst zodat het wat fijner voor hem is om nog een beetje te kunnen lezen van wat hij nog kan zien. Daarom is bijvoorbeeld light mode/de standaar contrast niet goed voor hem. Je moet wat anders verzinnen en dit koppelt weer goed terug met het testen van je prototype. Je komt op verschillende bevindingen en je kan daar je eigen conventions op maken die beter werken voor jouw gebruiker. </p>
+<p>Voor prioritise identity is het belangrijk dat je de iets van de gebruiker kan toevoegen aan je prototype dat identiteit geeft. Roger had niet echt iets dat hij graag wou terug zien in zijn ideale prototype dat hem een gevoel van identiteit geeft. Ik heb jammer genoeg ook niet echt iets kunnen bedenken dat ik aan mijn prototype kon toevoegen dat een gevoel van identiteit geeft. Alles was heel erg praktisch en functioneel gericht. 
+</p>
+<p>Voor add nonsense is het echt thinking outside the box. Je moet praten met de test persoon en kijken of er een gek idee is dat juist kan helpen met de functionaliteit van je prototype. Ik had eerst een idee dat ervoor zorgde dat je een stuk tekst kon selecteren en verplaatsen naar een kant van het scherm zodat Roger dit kon zien. Natuurlijk is dit een gek idee en ik was best trots op dit idee, alleen werkte dit helemaal niet, omdat ik dus niet goed heb gekeken/nagedacht over zijn conditie. Nu heeft Roger ook niet echt iets dat hij graag zou willen zien behalve meer practische dingen dat niet echt nonsense zijn. </p>
 
